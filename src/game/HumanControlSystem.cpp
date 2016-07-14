@@ -154,7 +154,7 @@ void HumanControlSystem::move(ecs::Entity entity, double dt, glm::vec3 normalize
 	float movement = HumanControlSystem::MOVE_SPEED * (float)dt;
 	glm::vec4 translation(movement * normalizedDirection, 0);
 
-	transform->Translate(transform->rotate * translation);
+	transform->Translate(glm::vec3(transform->rotate * translation));
 }
 
 }

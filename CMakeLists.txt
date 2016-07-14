@@ -101,7 +101,7 @@ add_subdirectory(${EXT_PATH}/conglomerate)
 
 set(glew-cmake_BUILD_SHARED OFF)
 set(glew-cmake_BUILD_STATIC ON)
-add_subdirectory(${EXT_PATH}/glew-cmake)
+add_subdirectory(${EXT_PATH}/glew-cmake/build/cmake)
 
 set(ASSIMP_BUILD_TESTS OFF)
 set(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
