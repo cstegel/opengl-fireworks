@@ -36,8 +36,6 @@ namespace fw
 		logic.Init();
 		lastFrameTime = glfwGetTime();
 
-
-		audio.Play("monstrous_cow.wav");
 		while (true)
 		{
 			if (shouldStop()) break;

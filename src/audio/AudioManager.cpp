@@ -2,10 +2,7 @@
 #include "core/AssetManager.hpp"
 #include "core/Game.hpp"
 
-// don't use AL/ prefix since cmake adds this dir as the include_dir
-#include <al.h>
-#include <alc.h>
-#include <alut.h>
+#include <Ecs.hh>
 
 #include <stdio.h>
 
@@ -15,6 +12,11 @@ namespace fw
 AudioManager::AudioManager(Game & game) : game(game)
 {
 	alutInit(0, NULL);
+
+	// drain errors
+	while(alGetError());
+
+	loadSoundBuffers();
 }
 
 AudioManager::~AudioManager()
@@ -22,42 +24,39 @@ AudioManager::~AudioManager()
 	alutExit();
 }
 
-void AudioManager::Play(const string & audioFile)
+void AudioManager::loadSoundBuffers()
 {
-	ALuint buffer, source;
-	ALint state;
-
-	// Capture errors
-	alGetError();
-
-	// Load pcm data into buffer
-	string audioFilepath = AssetManager::GetAudioPath(audioFile);
-	buffer = alutCreateBufferFromFile(audioFilepath.c_str());
-	if (buffer == AL_NONE)
-	{
-		throw std::runtime_error(
-			"error loading sound \"" + audioFilepath + "\": "
-			+ alutGetErrorString(alutGetError()));
-	}
-	// buffer = alutCreateBufferHelloWorld();
-
-	// Create sound source (use buffer to fill source)
-	alGenSources(1, &source);
-	alSourcei(source, AL_BUFFER, buffer);
-
-	// Play
-	alSourcePlay(source);
-
-	// Wait for the song to complete
-	do {
-		alGetSourcei(source, AL_SOURCE_STATE, &state);
-	} while (state == AL_PLAYING);
-
-	// Clean up sources and buffers
-	alDeleteSources(1, &source);
-	alDeleteBuffers(1, &buffer);
+	string audioFilepath = AssetManager::GetAudioPath("monstrous_cow.wav");
+	sounds[SoundId::DRAGON_ROAR] = Sound(audioFilepath);
 }
 
+void AudioManager::Frame()
+{
+	// update listener kinematics
+	// TODO
+	alListener3f(AL_POSITION, 0, 0, 1.0f);
+	alListener3f(AL_VELOCITY, 0, 0, 0);
+	// alListenerfv(AL_ORIENTATION, listenerOri);
 
+	for (auto & pair : sounds)
+	{
+		Sound & sound = pair.second;
+		sound.DeleteFinishedSources();
+		sound.UpdateSourceKinematics();
+	}
+}
+
+void AudioManager::Play(SoundId sound, ecs::Entity location)
+{
+	if (sounds.count(sound) < 1)
+	{
+		throw std::runtime_error("sound " + string(static_cast<int>(sound) + " not loaded"));
+	}
+
+	if (!sounds.at(sound).PlayNewSound(location))
+	{
+		throw std::runtime_error("failed to play sound " + to_string(static_cast<int>(sound)));
+	}
+}
 
 }

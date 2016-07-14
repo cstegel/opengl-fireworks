@@ -6,6 +6,8 @@
 #include "ecs/components/View.hpp"
 #include "ecs/components/PointLight.hpp"
 
+#include "audio/SoundId.hpp"
+
 #include <cmath>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -74,6 +76,8 @@ void GameLogic::Init()
 	lightTransform2->Translate(1, 120, 1);
 	auto pointLight2 = light2.Assign<PointLight>();
 	pointLight2->intensity = 10;
+
+	game.audio.Play(SoundId::DRAGON_ROAR, alduin);
 }
 
 GameLogic::~GameLogic()
