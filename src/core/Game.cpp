@@ -63,6 +63,7 @@ namespace fw
 
 		if (!logic.Frame(dt)) return false;
 		if (!graphics.Frame()) return false;
+		if (!audio.Frame()) return false;
 
 		lastFrameTime = frameTime;
 		return true;

@@ -29,7 +29,7 @@ public:
 	 * It must have a Transform component at the very minimum.
 	 */
 	void Play(SoundId sound, ecs::Entity location);
-	void Frame();
+	bool Frame();
 
 private:
 	void loadSoundBuffers();

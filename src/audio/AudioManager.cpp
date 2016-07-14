@@ -16,6 +16,14 @@ AudioManager::AudioManager(Game & game) : game(game)
 	// drain errors
 	while(alGetError());
 
+	// ALuint buffer = alutCreateBufferFromFile(AssetManager::GetAudioPath("monstrous_cow.wav").c_str());
+	//
+	// ALuint source;
+	// alGenSources(1, &source);
+	// alSourcei(source, AL_BUFFER, buffer);
+	//
+	// alSourcePlay(source);
+
 	loadSoundBuffers();
 }
 
@@ -27,16 +35,17 @@ AudioManager::~AudioManager()
 void AudioManager::loadSoundBuffers()
 {
 	string audioFilepath = AssetManager::GetAudioPath("monstrous_cow.wav");
-	sounds[SoundId::DRAGON_ROAR] = Sound(audioFilepath);
+	sounds.emplace(SoundId::DRAGON_ROAR, audioFilepath);
 }
 
-void AudioManager::Frame()
+bool AudioManager::Frame()
 {
+	float listenerOri[] = {0, 0, 1, 0, 1, 0}; // lookAt, Up
 	// update listener kinematics
 	// TODO
 	alListener3f(AL_POSITION, 0, 0, 1.0f);
 	alListener3f(AL_VELOCITY, 0, 0, 0);
-	// alListenerfv(AL_ORIENTATION, listenerOri);
+	alListenerfv(AL_ORIENTATION, listenerOri);
 
 	for (auto & pair : sounds)
 	{
@@ -44,6 +53,8 @@ void AudioManager::Frame()
 		sound.DeleteFinishedSources();
 		sound.UpdateSourceKinematics();
 	}
+
+	return true;
 }
 
 void AudioManager::Play(SoundId sound, ecs::Entity location)

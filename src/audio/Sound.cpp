@@ -9,8 +9,6 @@ Sound::Sound(const string & filepath) : Sound(filepath.c_str()) {}
 
 Sound::Sound(const char * filepath) : filepath(filepath)
 {
-	ALuint buffer;
-
 	buffer = alutCreateBufferFromFile(this->filepath.c_str());
 	if (buffer == AL_NONE)
 	{
@@ -31,6 +29,7 @@ Sound::~Sound()
 	if (buffer != AL_NONE)
 	{
 		alDeleteBuffers(1, &buffer);
+		std::cout << "deleted buffer " << buffer << std::endl;
 	}
 }
 
@@ -44,14 +43,17 @@ ALuint Sound::PlayNewSound(ecs::Entity location)
 
 	alSourcef(source, AL_PITCH, 1);
 	alSourcef(source, AL_GAIN, 1);
-	alSourcei(source, AL_BUFFER, buffer);
 	alSourcei(source, AL_LOOPING, AL_FALSE);
+	alSourcei(source, AL_BUFFER, buffer);
+
+	setSourceKinematics(source, location);
 
 	sources[source] = location;
 
 	checkALErrors();
+	Play(source);
 
-	return Play(source);
+	return source;
 }
 
 void Sound::validateEntity(ecs::Entity ent) const
@@ -98,19 +100,23 @@ bool Sound::Stop(ALuint source)
 	return true;
 }
 
+void Sound::setSourceKinematics(ALuint source, ecs::Entity location)
+{
+	validateEntity(location);
+	glm::mat4 transform = location.Get<Transform>()->GetModelTransform(*location.GetManager());
+	glm::vec4 pos = transform * glm::vec4(0, 0, 0, 1);
+
+	alSource3f(source, AL_POSITION, pos.x, pos.y, pos.z);
+	alSource3f(source, AL_VELOCITY, 0, 0, 0); // TODO
+}
+
 void Sound::UpdateSourceKinematics()
 {
 	for (auto & pair : sources)
 	{
 		ALuint source = pair.first;
 		ecs::Entity location = pair.second;
-
-		validateEntity(location);
-		glm::mat4 transform = location.Get<Transform>()->GetModelTransform(*location.GetManager());
-		glm::vec4 pos = transform * glm::vec4(0, 0, 0, 1);
-
-		alSource3f(source, AL_POSITION, pos.x, pos.y, pos.z);
-		alSource3f(source, AL_VELOCITY, 0, 0, 0); // TODO
+		setSourceKinematics(source, location);
 	}
 
 	checkALErrors();

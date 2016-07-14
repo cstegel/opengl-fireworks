@@ -42,6 +42,7 @@ public:
 private:
 	void validateEntity(ecs::Entity ent) const;
 	void checkALErrors() const;
+	void setSourceKinematics(ALuint source, ecs::Entity location);
 
 	ALuint buffer;
 	unordered_map<ALuint, ecs::Entity> sources;
