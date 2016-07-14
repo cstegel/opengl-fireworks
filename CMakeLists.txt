@@ -99,11 +99,14 @@ include_directories(
 
 add_subdirectory(${EXT_PATH}/conglomerate)
 
-add_subdirectory(${EXT_PATH}/glew-cmake/build/cmake)
+set(glew-cmake_BUILD_SHARED OFF)
+set(glew-cmake_BUILD_STATIC ON)
+add_subdirectory(${EXT_PATH}/glew-cmake)
 
 set(ASSIMP_BUILD_TESTS OFF)
 set(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 set(ASSIMP_BUILD_SAMPLES OFF)
+set(ASSIMP_INSTALL_PDB OFF)
 add_subdirectory(${EXT_PATH}/assimp)
 
 add_subdirectory(${EXT_PATH}/Simple-OpenGL-Image-Library)
