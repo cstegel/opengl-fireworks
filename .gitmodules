@@ -1,0 +1,21 @@
+[submodule "ext/glm"]
+	path = ext/glm
+	url = git://github.com/g-truc/glm.git
+[submodule "ext/glfw"]
+	path = ext/glfw
+	url = git://github.com/glfw/glfw.git
+[submodule "ext/glew-cmake"]
+	path = ext/glew-cmake
+	url = https://github.com/Perlmint/glew-cmake.git
+[submodule "ext/conglomerate"]
+	path = ext/conglomerate
+	url = git@gitlab.com:LlazyLlama/conglomerate.git
+[submodule "ext/assimp"]
+	path = ext/assimp
+	url = https://github.com/assimp/assimp.git
+[submodule "ext/Simple-OpenGL-Image-Library"]
+	path = ext/Simple-OpenGL-Image-Library
+	url = https://github.com/kbranigan/Simple-OpenGL-Image-Library.git
+[submodule "ext/imgui"]
+	path = ext/imgui
+	url = https://github.com/ocornut/imgui.git

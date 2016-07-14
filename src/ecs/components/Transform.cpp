@@ -1,0 +1,88 @@
+#include "ecs/components/Transform.hpp"
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <Ecs.hh>
+
+namespace fw
+{
+
+glm::mat4 Transform::GetModelTransform(ecs::EntityManager &manager)
+{
+	glm::mat4 model;
+
+	if (this->relativeTo != ecs::Entity::Id())
+	{
+		if (!manager.Has<Transform>(this->relativeTo))
+		{
+			throw std::runtime_error("cannot be relative to something that does not have a transform");
+		}
+
+		model = manager.Get<Transform>(this->relativeTo)->GetModelTransform(manager);
+	}
+
+	return model * this->translate * GetRotateMatrix() * this->scale;
+}
+
+void Transform::SetRelativeTo(ecs::Entity ent)
+{
+	if (!ent.Has<Transform>())
+	{
+		std::stringstream ss;
+		ss << "Cannot set placement relative to " << ent
+		   << " because it does not have a placement.";
+		throw std::runtime_error(ss.str());
+	}
+
+	this->relativeTo = ent.GetId();
+}
+
+void Transform::Rotate(float radians, glm::vec3 axis)
+{
+	this->rotate = glm::rotate(this->rotate, radians, axis);
+}
+
+void Transform::Translate(glm::vec3 xyz)
+{
+	this->translate = glm::translate(this->translate, xyz);
+}
+
+void Transform::Translate(float x, float y, float z)
+{
+	Translate(glm::vec3(x, y, z));
+}
+
+void Transform::Scale(glm::vec3 xyz)
+{
+	this->scale = glm::scale(this->scale, xyz);
+}
+
+void Transform::Scale(float x, float y, float z)
+{
+	Scale(glm::vec3(x, y, z));
+}
+
+void Transform::Scale(float amount)
+{
+	Scale(glm::vec3(amount, amount, amount));
+}
+
+glm::mat4 Transform::GetRotateMatrix()
+{
+	return glm::mat4_cast(rotate);
+}
+
+void Transform::LookAt(glm::vec3 center, glm::vec3 worldUp)
+{
+	rotate = glm::quat_cast(
+		glm::inverse(glm::lookAt(
+			glm::vec3(translate*glm::vec4(0, 0, 0, 1)),
+			center,
+			worldUp
+		))
+	);
+}
+
+}
