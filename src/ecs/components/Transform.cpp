@@ -26,6 +26,12 @@ glm::mat4 Transform::GetModelTransform(ecs::EntityManager &manager)
 	return model * this->translate * GetRotateMatrix() * this->scale;
 }
 
+glm::vec3 Transform::GetForwardVec(const glm::vec3 & worldForward, ecs::EntityManager &manager)
+{
+	glm::mat3 modelNoTranslate(GetModelTransform(manager));
+	return glm::normalize(modelNoTranslate * worldForward);
+}
+
 void Transform::SetRelativeTo(ecs::Entity ent)
 {
 	if (!ent.Has<Transform>())

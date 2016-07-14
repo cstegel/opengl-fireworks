@@ -22,6 +22,13 @@ public:
 	glm::mat4 GetModelTransform(ecs::EntityManager &manager);
 
 	/**
+	 * Return the world-space direction that this transform causes the entity to face.
+	 * This will be computed by obtaining the model transform so it may be slow
+	 * for hierarchical entities.
+	 */
+	glm::vec3 GetForwardVec(const glm::vec3 & worldForward, ecs::EntityManager &manager);
+
+	/**
 	 * Change the local rotation by "radians" amount about the local "axis"
 	 */
 	void Rotate(float radians, glm::vec3 axis);

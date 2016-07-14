@@ -37,6 +37,7 @@ void GameLogic::Init()
 	playerLight->intensity = 1;
 
 	game.graphics.SetPlayerView(player);
+	game.audio.SetPlayerLocation(player);
 
 	// models
 

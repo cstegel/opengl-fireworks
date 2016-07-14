@@ -18,6 +18,7 @@ namespace fw
 		entityManager.RegisterComponentType<PointLight>();
 
 		worldUp = glm::vec3(0, 1, 0);
+		worldForward = glm::vec3(1, 0, 0);
 	}
 
 	Game::~Game()
@@ -28,6 +29,11 @@ namespace fw
 	glm::vec3 Game::GetWorldUp() const
 	{
 		return worldUp;
+	}
+
+	glm::vec3 Game::GetWorldForward() const
+	{
+		return worldForward;
 	}
 
 	int Game::Start()

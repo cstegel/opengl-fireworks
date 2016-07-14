@@ -19,6 +19,7 @@ namespace fw
 
 		int Start();
 		glm::vec3 GetWorldUp() const;
+		glm::vec3 GetWorldForward() const;
 		static string RootDir();
 
 		GraphicsManager graphics;
@@ -34,6 +35,7 @@ namespace fw
 		double lastFrameTime;
 
 		glm::vec3 worldUp;
+		glm::vec3 worldForward;
 	};
 }
 

@@ -16,20 +16,26 @@ AudioManager::AudioManager(Game & game) : game(game)
 	// drain errors
 	while(alGetError());
 
-	// ALuint buffer = alutCreateBufferFromFile(AssetManager::GetAudioPath("monstrous_cow.wav").c_str());
-	//
-	// ALuint source;
-	// alGenSources(1, &source);
-	// alSourcei(source, AL_BUFFER, buffer);
-	//
-	// alSourcePlay(source);
-
 	loadSoundBuffers();
 }
 
 AudioManager::~AudioManager()
 {
 	alutExit();
+}
+
+void AudioManager::SetPlayerLocation(ecs::Entity player)
+{
+	validateEntity(player);
+	this->player = player;
+}
+
+void AudioManager::validateEntity(ecs::Entity ent) const
+{
+	if (!ent.Has<Transform>())
+	{
+		throw std::runtime_error("entity must have a transform component");
+	}
 }
 
 void AudioManager::loadSoundBuffers()
@@ -40,10 +46,25 @@ void AudioManager::loadSoundBuffers()
 
 bool AudioManager::Frame()
 {
-	float listenerOri[] = {0, 0, 1, 0, 1, 0}; // lookAt, Up
-	// update listener kinematics
-	// TODO
-	alListener3f(AL_POSITION, 0, 0, 1.0f);
+	validateEntity(player);
+
+	ecs::Handle<Transform> transform = player.Get<Transform>();
+	glm::mat4 model = transform->GetModelTransform(*player.GetManager());
+
+	glm::vec3 position = glm::vec3(model * glm::vec4(0, 0, 0, 1));
+	glm::vec3 forward = transform->GetForwardVec(
+		game.GetWorldForward(),
+		*player.GetManager()
+	);
+
+	glm::vec3 up = game.GetWorldUp();
+
+	float listenerOri[] = {
+		forward.x, forward.y, forward.z,
+		up.x, up.y, up.z
+	};
+
+	alListener3f(AL_POSITION, position.x, position.y, position.z);
 	alListener3f(AL_VELOCITY, 0, 0, 0);
 	alListenerfv(AL_ORIENTATION, listenerOri);
 
