@@ -30,10 +30,4 @@ void main()
 	{
 		outNormal = (inNormal_World + 1) / 2.0f;
 	}
-
-	outNormal.r = min(0, max(0, outNormal.r));
-	outNormal.g = min(0, max(0, outNormal.g));
-	outNormal.b = min(0, max(0, outNormal.b));
-
-	outNormal.rgb += 0.5f;
 }

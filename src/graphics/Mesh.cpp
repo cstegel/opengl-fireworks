@@ -35,8 +35,13 @@ void Mesh::Render(
 	glm::mat4 mvp = context.GetCachedProjection() * context.GetCachedView() * transform;
 
 	glUniformMatrix4fv(
-		shader.getUniformLocation("mvp"),
+		shader.getUniformLocation("mvpMat"),
 		1, GL_FALSE, glm::value_ptr(mvp)
+	);
+
+	glUniformMatrix4fv(
+		shader.getUniformLocation("modelMat"),
+		1, GL_FALSE, glm::value_ptr(transform)
 	);
 
 	glUniform1f(

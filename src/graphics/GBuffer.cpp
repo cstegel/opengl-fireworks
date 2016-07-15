@@ -8,6 +8,8 @@ GBuffer::GBuffer(uint screenWidth, uint screenHeight)
 {
 	glGenFramebuffers(1, &FBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+	glPushAttrib(GL_VIEWPORT_BIT);
+    glViewport(0, 0, screenWidth, screenHeight);
 
 	// - Position color buffer
     glGenTextures(1, &texPosition);

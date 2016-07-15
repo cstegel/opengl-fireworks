@@ -11,12 +11,14 @@ layout (location = 1) out vec2 outTexCoord;
 layout (location = 2) out vec3 outNormal_World;
 layout (location = 3) out mat3 tangentToWorld;
 
-uniform mat4 mvp;
+uniform mat4 mvpMat;
+uniform mat4 modelMat;
 uniform mat3 normalMat;    // convert vectors from model -> world
 
 void main()
 {
-	outPosition = vec3(mvp * vec4(inPosition, 1));
+	gl_Position = mvpMat * vec4(inPosition, 1);
+	outPosition = vec3(modelMat * vec4(inPosition, 1));
 
 	// convert basis vectors to be with respect to world
 	vec3 T_world = normalize(normalMat * inTangent);

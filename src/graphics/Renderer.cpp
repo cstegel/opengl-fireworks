@@ -71,8 +71,10 @@ void Renderer::Render(RenderContext & context)
 	{
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
-		// glDisable(GL_BLEND);
 		glDepthMask(GL_TRUE);
+
+		glDisable(GL_BLEND);
+		glDisable(GL_STENCIL_TEST);
 
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
