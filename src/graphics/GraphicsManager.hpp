@@ -31,6 +31,9 @@ namespace fw
 		bool Frame();
 		bool ShouldClose() const;
 
+		uint GetWindowWidth() const;
+		uint GetWindowHeight() const;
+
 		/**
 		 * Sets the entity to be used when rendering the player's view.
 		 * This entity must have a "View" component.

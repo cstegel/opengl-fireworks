@@ -7,18 +7,53 @@ namespace fw
 {
 
 unordered_map<Texture::Type, string, EnumHash> Texture::typeToGlslVar = {
-	{Texture::Type::DIFFUSE, "texDiffuse"},
+	{Texture::Type::ALBEDO, "texAlbedo"},
 	{Texture::Type::SPECULAR, "texSpecular"},
 	{Texture::Type::SHININESS, "texShininess"},
 	{Texture::Type::NORMAL, "texNormal"},
+	{Texture::Type::POSITION, "texPosition"},
+	{Texture::Type::ALBEDO_SPECULAR, "texAlbedoSpecular"},
 };
 
 unordered_map<aiTextureType, Texture::Type, EnumHash> Texture::aiTypeToTexType = {
-	{aiTextureType_DIFFUSE, Texture::Type::DIFFUSE},
+	{aiTextureType_DIFFUSE, Texture::Type::ALBEDO},
 	{aiTextureType_SPECULAR, Texture::Type::SPECULAR},
 	{aiTextureType_SHININESS, Texture::Type::SHININESS},
 	{aiTextureType_HEIGHT, Texture::Type::NORMAL},
 };
+
+Texture::Texture(
+	Type texType,
+	uint width,
+	uint height,
+	GLint internalFormat,
+	GLenum format,
+	GLenum type,
+	const GLvoid * image)
+	: type(texType)
+{
+	glGenTextures(1, &id);
+
+	// Assign texture to ID
+	glBindTexture(GL_TEXTURE_2D, id);
+	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, image);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	if (image)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	}
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+Texture::~Texture()
+{
+}
 
 // with help from http://www.learnopengl.com/#!Model-Loading/Model
 GLuint Texture::LoadFromFile(const string & path)
@@ -74,7 +109,7 @@ void Texture::Bind(ShaderProgram & shader, uint textureNumber) const
 	);
 }
 
-void Texture::UnBind(uint textureNumber) const
+void Texture::Unbind(uint textureNumber) const
 {
 	glActiveTexture(GL_TEXTURE0 + textureNumber);
 	glBindTexture(GL_TEXTURE_2D, 0);

@@ -32,9 +32,11 @@ void Mesh::Render(
 		1, GL_TRUE, glm::value_ptr(transposeNormalMatrix)
 	);
 
+	glm::mat4 mvp = context.GetCachedProjection() * context.GetCachedView() * transform;
+
 	glUniformMatrix4fv(
-		shader.getUniformLocation("model"),
-		1, GL_FALSE, glm::value_ptr(transform)
+		shader.getUniformLocation("mvp"),
+		1, GL_FALSE, glm::value_ptr(mvp)
 	);
 
 	glUniform1f(
@@ -42,22 +44,12 @@ void Mesh::Render(
 		shininess
 	);
 
-	bool hasDiffuseTexture = false;
-	bool hasSpecularTexture = false;
 	bool hasNormalTexture = false;
 
 	for (uint textureNumber = 0; textureNumber < textures.size(); textureNumber++)
 	{
 		Texture & texture = textures.at(textureNumber);
-		if (texture.type == Texture::Type::DIFFUSE)
-		{
-			hasDiffuseTexture = true;
-		}
-		else if (texture.type == Texture::Type::SPECULAR)
-		{
-			hasSpecularTexture = true;
-		}
-		else if (texture.type == Texture::Type::NORMAL)
+		if (texture.type == Texture::Type::NORMAL)
 		{
 			if (!context.IsRenderFeatureEnabled(RenderFeature::NORMAL_MAPS))
 			{
@@ -68,8 +60,6 @@ void Mesh::Render(
 		texture.Bind(shader, textureNumber);
 	}
 
-	glUniform1i(shader.getUniformLocation("hasDiffuseTexture", true), hasDiffuseTexture);
-	glUniform1i(shader.getUniformLocation("hasSpecularTexture", true), hasSpecularTexture);
 	glUniform1i(shader.getUniformLocation("hasNormalTexture", true), hasNormalTexture);
 
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
@@ -77,7 +67,7 @@ void Mesh::Render(
 	for (uint textureNumber = 0; textureNumber < textures.size(); textureNumber++)
 	{
 		Texture & texture = textures.at(textureNumber);
-		texture.UnBind(textureNumber);
+		texture.Unbind(textureNumber);
 	}
 
 	glBindVertexArray(0);

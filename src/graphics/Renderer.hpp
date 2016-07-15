@@ -3,6 +3,7 @@
 #include "cs488/ShaderProgram.hpp"
 #include "graphics/DisplayMode.hpp"
 #include "graphics/RenderFeature.hpp"
+#include "graphics/GBuffer.hpp"
 
 #include <Ecs.hh>
 
@@ -21,10 +22,18 @@ namespace fw
 
 	private:
 		void bindLights(ShaderProgram & shader, RenderContext & context);
+		void renderModels(RenderContext & context, ShaderProgram & shader);
+		void initQuad();
+		void renderQuad();
 
 		GraphicsManager &graphics;
 		ShaderProgram defaultShader;
 		ShaderProgram normalOutputShader;
 		ShaderProgram lightShader;
+
+		ShaderProgram geometryPassShader;
+
+		GBuffer gBuffer;
+		GLuint quadVAO; // VAO for drawing the quad in the lighting pass
 };
 }

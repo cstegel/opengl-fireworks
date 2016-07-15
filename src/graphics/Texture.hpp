@@ -15,10 +15,24 @@ public:
 	enum class Type
 	{
 		NORMAL,
-		DIFFUSE,
+		POSITION,
+		ALBEDO,
 		SPECULAR,
+		ALBEDO_SPECULAR,
 		SHININESS,
 	};
+
+	Texture() {}
+	Texture(
+		Type texType,
+		uint width,
+		uint height,
+		GLint internalFormat,
+		GLenum format,
+		GLenum type,
+		const GLvoid * image);
+
+	~Texture();
 
 	/**
 	* Returns the id of the loaded texture.
@@ -28,7 +42,7 @@ public:
 	static Type GetType(aiTextureType aiType);
 
 	void Bind(ShaderProgram & shader, uint textureNumber) const;
-	void UnBind(uint textureNumber) const;
+	void Unbind(uint textureNumber) const;
 
 	GLuint id;
 	Type type;

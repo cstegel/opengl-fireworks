@@ -71,7 +71,15 @@ void ShaderProgram::extractSourceCodeAndCompile (
 	string shaderSourceCode;
 	extractSourceCode(shaderSourceCode, shader.filePath);
 
-	compileShader(shader.shaderObject, shaderSourceCode);
+	try {
+		compileShader(shader.shaderObject, shaderSourceCode);
+	}
+	catch (ShaderException & ex)
+	{
+		std::string location = std::string(" in file\n") + shader.filePath;
+	    std::string error(ex.what());
+	    throw ShaderException(error+location);
+	}
 }
 
 //------------------------------------------------------------------------------------
