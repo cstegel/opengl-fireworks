@@ -33,8 +33,8 @@ void GameLogic::Init()
 	player.Assign<View>(glm::radians(75.0f), 0.01, 1000);
 	humanControlSystem.AssignController(player);
 
-	auto playerLight = player.Assign<PointLight>();
-	playerLight->intensity = 1;
+	// auto playerLight = player.Assign<PointLight>();
+	// playerLight->intensity = 1;
 
 	game.graphics.SetPlayerView(player);
 	game.audio.SetPlayerLocation(player);
@@ -72,11 +72,11 @@ void GameLogic::Init()
 	auto pointLight = light1.Assign<PointLight>();
 	pointLight->intensity = 2;
 
-	ecs::Entity light2 = game.entityManager.NewEntity();
-	auto lightTransform2 = light2.Assign<Transform>();
-	lightTransform2->Translate(1, 120, 1);
-	auto pointLight2 = light2.Assign<PointLight>();
-	pointLight2->intensity = 10;
+	// ecs::Entity light2 = game.entityManager.NewEntity();
+	// auto lightTransform2 = light2.Assign<Transform>();
+	// lightTransform2->Translate(1, 120, 1);
+	// auto pointLight2 = light2.Assign<PointLight>();
+	// pointLight2->intensity = 10;
 
 	game.audio.Play(SoundId::DRAGON_ROAR, alduin);
 }
@@ -111,7 +111,9 @@ bool GameLogic::Frame(double dtSinceLastFrame)
 		ImGui::RadioButton("Normals (2)", (int*)&displayMode, (int)DisplayMode::NORMALS);
 		ImGui::RadioButton("Albedo (3)", (int*)&displayMode, (int)DisplayMode::ALBEDO);
 		ImGui::RadioButton("Specular (4)", (int*)&displayMode, (int)DisplayMode::SPECULAR);
-		ImGui::RadioButton("Position (5)", (int*)&displayMode, (int)DisplayMode::POSITION);
+		ImGui::RadioButton("Shininess (5)", (int*)&displayMode, (int)DisplayMode::SHININESS);
+		ImGui::RadioButton("Position (6)", (int*)&displayMode, (int)DisplayMode::POSITION);
+		ImGui::RadioButton("Brightness (7)", (int*)&displayMode, (int)DisplayMode::BRIGHTNESS);
 
 		// Create Button, and check if it was clicked:
 		if( ImGui::Button( "Quit Application" ) ) {
@@ -132,7 +134,9 @@ bool GameLogic::Frame(double dtSinceLastFrame)
 	else if (game.input.IsPressed(GLFW_KEY_2)) displayMode = DisplayMode::NORMALS;
 	else if (game.input.IsPressed(GLFW_KEY_3)) displayMode = DisplayMode::ALBEDO;
 	else if (game.input.IsPressed(GLFW_KEY_4)) displayMode = DisplayMode::SPECULAR;
-	else if (game.input.IsPressed(GLFW_KEY_5)) displayMode = DisplayMode::POSITION;
+	else if (game.input.IsPressed(GLFW_KEY_5)) displayMode = DisplayMode::SHININESS;
+	else if (game.input.IsPressed(GLFW_KEY_6)) displayMode = DisplayMode::POSITION;
+	else if (game.input.IsPressed(GLFW_KEY_7)) displayMode = DisplayMode::BRIGHTNESS;
 
 	if (game.input.IsPressed(GLFW_KEY_N))
 	{

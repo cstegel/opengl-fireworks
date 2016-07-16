@@ -7,10 +7,11 @@ layout (location = 3) in mat3 tangentToWorld;
 
 // these go to the gbuffer textures
 layout (location = 0) out vec3 outPosition;
-layout (location = 1) out vec3 outNormal;
+layout (location = 1) out vec4 outNormalShininess;
 layout (location = 2) out vec4 outAlbedoSpec;
 
 uniform bool hasNormalTexture;
+uniform float shininess;
 uniform sampler2D texAlbedo;
 uniform sampler2D texSpecular;
 uniform sampler2D texNormal;
@@ -21,13 +22,17 @@ void main()
 	outAlbedoSpec.rgb = texture(texAlbedo, inTexCoord).rgb;
 	outAlbedoSpec.a = texture(texSpecular, inTexCoord).r;
 
+	vec3 normal_World;
 	if (hasNormalTexture)
 	{
-		outNormal = texture(texNormal, inTexCoord).xyz * 2.0 - 1.0;
-		outNormal = normalize(tangentToWorld * outNormal);
+		normal_World = texture(texNormal, inTexCoord).xyz * 2.0 - 1.0;
+		normal_World = normalize(tangentToWorld * normal_World);
 	}
 	else
 	{
-		outNormal = normalize(inNormal_World);
+		normal_World = normalize(inNormal_World);
 	}
+
+	outNormalShininess.rgb = normal_World;
+	outNormalShininess.a = shininess;
 }

@@ -24,7 +24,7 @@ Renderer::Renderer(GraphicsManager &graphics)
 {
 	gBufferDebugShader.generateProgramObject();
 	gBufferDebugShader.attachVertexShader(
-		GraphicsManager::GetShaderPath("PositionTexCoord.vert").c_str() );
+		GraphicsManager::GetShaderPath("ShadingPass.vert").c_str() );
 	gBufferDebugShader.attachFragmentShader(
 		GraphicsManager::GetShaderPath("GBufferDebug.frag").c_str() );
 	gBufferDebugShader.link();
@@ -36,6 +36,13 @@ Renderer::Renderer(GraphicsManager &graphics)
 	// 	GraphicsManager::GetShaderPath("Light.frag").c_str() );
 	// lightShader.link();
 
+	lightDebugShader.generateProgramObject();
+	lightDebugShader.attachVertexShader(
+		GraphicsManager::GetShaderPath("ShadingPass.vert").c_str() );
+	lightDebugShader.attachFragmentShader(
+		GraphicsManager::GetShaderPath("LightDebug.frag").c_str() );
+	lightDebugShader.link();
+
 	geometryPassShader.generateProgramObject();
 	geometryPassShader.attachVertexShader(
 		GraphicsManager::GetShaderPath("GeometryPass.vert").c_str() );
@@ -45,7 +52,7 @@ Renderer::Renderer(GraphicsManager &graphics)
 
 	shadingPassShader.generateProgramObject();
 	shadingPassShader.attachVertexShader(
-		GraphicsManager::GetShaderPath("PositionTexCoord.vert").c_str() );
+		GraphicsManager::GetShaderPath("ShadingPass.vert").c_str() );
 	shadingPassShader.attachFragmentShader(
 		GraphicsManager::GetShaderPath("ShadingPass.frag").c_str() );
 	shadingPassShader.link();
@@ -89,16 +96,20 @@ void Renderer::Render(RenderContext & context)
 	bool shouldBindViewPos = true;
 	DisplayMode displayMode = context.GetDisplayMode();
 
-	if (isDebugDisplayMode(displayMode))
+	if (isGBufferDebugDisplayMode(displayMode))
 	{
 		shader = &gBufferDebugShader;
 		shouldBindLights = false;
 		shouldBindViewPos = false;
 	}
+	else if (displayMode == DisplayMode::BRIGHTNESS)
+	{
+		shader = &lightDebugShader;
+	}
 
 	shader->enable();
 	{
-		if (isDebugDisplayMode(displayMode))
+		if (isGBufferDebugDisplayMode(displayMode))
 		{
 			glUniform1i(shader->getUniformLocation("displayMode"), (int)displayMode);
 		}
@@ -113,8 +124,6 @@ void Renderer::Render(RenderContext & context)
 			glUniform3f(
 			shader->getUniformLocation("viewPos_World"),
 			viewPos.x, viewPos.y, viewPos.z);
-
-			std::cout << "x: " << viewPos.x << ", y: " << viewPos.y << ", z: " << viewPos.z << std::endl;
 		}
 
 		if (shouldBindLights)
@@ -164,12 +173,13 @@ void Renderer::Render(RenderContext & context)
 	glfwSwapBuffers(context.GetWindow());
 }
 
-bool Renderer::isDebugDisplayMode(DisplayMode mode) const
+bool Renderer::isGBufferDebugDisplayMode(DisplayMode mode) const
 {
 	if (
 		mode == DisplayMode::NORMALS ||
 		mode == DisplayMode::ALBEDO ||
 		mode == DisplayMode::SPECULAR ||
+		mode == DisplayMode::SHININESS ||
 		mode == DisplayMode::POSITION)
 	{
 		return true;

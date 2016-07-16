@@ -1,14 +1,15 @@
 #version 430
 
 layout (binding = 0) uniform sampler2D texPosition;
-layout (binding = 1) uniform sampler2D texNormal;
+layout (binding = 1) uniform sampler2D texNormalShininess;
 layout (binding = 2) uniform sampler2D texAlbedoSpecular;
 
 // these should match src/graphics/DisplayMode.hpp
 const int DISPLAY_NORMALS = 1;
 const int DISPLAY_ALBEDO = 2;
 const int DISPLAY_SPECULAR = 3;
-const int DISPLAY_POSITION = 4;
+const int DISPLAY_SHININESS = 4;
+const int DISPLAY_POSITION = 5;
 
 uniform int displayMode;
 
@@ -20,7 +21,7 @@ void main()
 {
 	if (displayMode == DISPLAY_NORMALS)
 	{
-		outFragColour = vec4((texture(texNormal, inTexCoord).rgb + 1) / 2, 1.0f);
+		outFragColour = vec4((texture(texNormalShininess, inTexCoord).rgb + 1) / 2, 1.0f);
 	}
 	else if (displayMode == DISPLAY_ALBEDO)
 	{
@@ -30,6 +31,14 @@ void main()
 	{
 		float spec = texture(texAlbedoSpecular, inTexCoord).a;
 		outFragColour = vec4(spec, spec, spec, 1.0f);
+	}
+	else if (displayMode == DISPLAY_SHININESS)
+	{
+		// dull and tone map the shininess
+		float shine = texture(texNormalShininess, inTexCoord).a / 10.0f;
+
+		shine = shine / (1.0 + shine);
+		outFragColour = vec4(shine, shine, shine, 1.0f);
 	}
 	else if (displayMode == DISPLAY_POSITION)
 	{
@@ -42,6 +51,7 @@ void main()
 	}
 	else
 	{
+		// indicate a bad display type (purple)
 		outFragColour = vec4(1, 0, 1, 1);
 	}
 }

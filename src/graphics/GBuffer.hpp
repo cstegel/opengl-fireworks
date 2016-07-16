@@ -24,7 +24,7 @@ public:
 
 private:
 	Texture texPosition;
-	Texture texNormal;
+	Texture texNormalShininess;
 	Texture texAlbedoSpec;
 	GLuint depthBuff;
 

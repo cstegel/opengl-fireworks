@@ -45,7 +45,7 @@ void Mesh::Render(
 	);
 
 	glUniform1f(
-		shader.getUniformLocation("shininess", true),
+		shader.getUniformLocation("shininess"),
 		shininess
 	);
 

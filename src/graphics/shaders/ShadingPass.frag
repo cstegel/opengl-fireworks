@@ -13,10 +13,9 @@ struct PointLight
 uniform PointLight[N_POINT_LIGHTS] pointLights;
 
 layout (binding = 0) uniform sampler2D texPosition;
-layout (binding = 1) uniform sampler2D texNormal;
+layout (binding = 1) uniform sampler2D texNormalShininess;
 layout (binding = 2) uniform sampler2D texAlbedoSpecular;
 
-uniform float shininess;
 uniform vec3 viewPos_World;
 
 layout (location = 0) in vec2 inTexCoord;
@@ -27,7 +26,7 @@ layout (location = 0) out vec4 outFragColour;
 vec3 phongColour(PointLight light)
 {
 	vec3 fragPos_World = texture(texPosition, inTexCoord).xyz;
-	vec3 normal_World = texture(texNormal, inTexCoord).xyz;
+	vec3 normal_World = texture(texNormalShininess, inTexCoord).xyz;
 
 	vec3 toLight = light.position - fragPos_World;
 
@@ -42,16 +41,17 @@ vec3 phongColour(PointLight light)
 	float diffuseStrength = max(0, dot(normalize(toLight), normal_World));
 	vec3 diffuse = diffuseStrength * matDiffuse;
 
-	vec3 reflectDir = normalize(reflect(toLight, normal_World));
+	vec3 reflectDir = normalize(reflect(-toLight, normal_World));
 	vec3 toViewer = normalize(viewPos_World - fragPos_World);
 	float specularStrength = max(0, dot(reflectDir, toViewer));
 
 	float specCoeff = texture(texAlbedoSpecular, inTexCoord).a;
 	vec3 matSpec = vec3(specCoeff, specCoeff, specCoeff);
 
+	float shininess = texture(texNormalShininess, inTexCoord).a;
 	vec3 specular = pow(specularStrength, shininess) * matSpec;
 
-	return ambient + localBrightness * light.colour * (diffuse + specular);
+	return ambient + localBrightness * light.colour *  (diffuse + specular);
 }
 
 vec3 gammaCorrect(vec3 colour)
@@ -80,8 +80,8 @@ void main() {
 		colour += phongColour(pointLights[i]);
 	}
 
-	// colour = uncharted2Tonemap(colour);
-	// colour = gammaCorrect(colour);
+	colour = uncharted2Tonemap(colour);
+	colour = gammaCorrect(colour);
 
 	outFragColour = vec4(colour, 1.0);
 }

@@ -17,29 +17,29 @@ GBuffer::GBuffer(uint screenWidth, uint screenHeight)
 		Texture::Type::POSITION,
 		screenWidth,
 		screenHeight,
-		GL_RGB16F ,
+		GL_RGB32F ,
 		GL_RGB,
 		GL_FLOAT,
 		NULL);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texPosition.id, 0);
 
-	texNormal = Texture(
+	texNormalShininess = Texture(
 		Texture::Type::NORMAL,
 		screenWidth,
 		screenHeight,
-		GL_RGB16F ,
-		GL_RGB,
+		GL_RGBA16F,
+		GL_RGBA,
 		GL_FLOAT,
 		NULL);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, texNormal.id, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, texNormalShininess.id, 0);
 
 	texAlbedoSpec = Texture(
 		Texture::Type::ALBEDO_SPECULAR,
 		screenWidth,
 		screenHeight,
+		GL_RGBA16F,
 		GL_RGBA,
-		GL_RGBA,
-		GL_UNSIGNED_BYTE,
+		GL_FLOAT,
 		NULL);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, texAlbedoSpec.id, 0);
 
@@ -69,23 +69,15 @@ GBuffer::~GBuffer()
 void GBuffer::BindTextures(ShaderProgram & shader)
 {
 	texPosition.Bind(shader, 0);
-	texNormal.Bind(shader, 1);
+	texNormalShininess.Bind(shader, 1);
 	texAlbedoSpec.Bind(shader, 2);
 }
 
 void GBuffer::UnbindTextures()
 {
 	texPosition.Unbind(0);
-	texNormal.Unbind(1);
+	texNormalShininess.Unbind(1);
 	texAlbedoSpec.Unbind(2);
-	// glActiveTexture(GL_TEXTURE0);
-	// glBindTexture(GL_TEXTURE_2D, 0);
-	//
-	// glActiveTexture(GL_TEXTURE1);
-	// glBindTexture(GL_TEXTURE_2D, 0);
-	//
-	// glActiveTexture(GL_TEXTURE2);
-	// glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 }
