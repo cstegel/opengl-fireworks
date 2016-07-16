@@ -11,7 +11,8 @@ enum class DisplayMode
 	SPECULAR = 3,
 	SHININESS = 4,
 	POSITION = 5,
-	BRIGHTNESS = 6,
+	STENCIL = 6,
+	BRIGHTNESS = 7,
 };
 
 }

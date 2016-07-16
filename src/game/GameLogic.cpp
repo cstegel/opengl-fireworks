@@ -113,7 +113,8 @@ bool GameLogic::Frame(double dtSinceLastFrame)
 		ImGui::RadioButton("Specular (4)", (int*)&displayMode, (int)DisplayMode::SPECULAR);
 		ImGui::RadioButton("Shininess (5)", (int*)&displayMode, (int)DisplayMode::SHININESS);
 		ImGui::RadioButton("Position (6)", (int*)&displayMode, (int)DisplayMode::POSITION);
-		ImGui::RadioButton("Brightness (7)", (int*)&displayMode, (int)DisplayMode::BRIGHTNESS);
+		ImGui::RadioButton("Stencil (7)", (int*)&displayMode, (int)DisplayMode::STENCIL);
+		ImGui::RadioButton("Brightness (8)", (int*)&displayMode, (int)DisplayMode::BRIGHTNESS);
 
 		// Create Button, and check if it was clicked:
 		if( ImGui::Button( "Quit Application" ) ) {
@@ -136,7 +137,8 @@ bool GameLogic::Frame(double dtSinceLastFrame)
 	else if (game.input.IsPressed(GLFW_KEY_4)) displayMode = DisplayMode::SPECULAR;
 	else if (game.input.IsPressed(GLFW_KEY_5)) displayMode = DisplayMode::SHININESS;
 	else if (game.input.IsPressed(GLFW_KEY_6)) displayMode = DisplayMode::POSITION;
-	else if (game.input.IsPressed(GLFW_KEY_7)) displayMode = DisplayMode::BRIGHTNESS;
+	else if (game.input.IsPressed(GLFW_KEY_7)) displayMode = DisplayMode::STENCIL;
+	else if (game.input.IsPressed(GLFW_KEY_8)) displayMode = DisplayMode::BRIGHTNESS;
 
 	if (game.input.IsPressed(GLFW_KEY_N))
 	{

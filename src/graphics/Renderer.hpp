@@ -33,6 +33,7 @@ namespace fw
 		ShaderProgram gBufferDebugShader;
 		ShaderProgram lightDebugShader;
 		ShaderProgram lightShader;
+		ShaderProgram stencilShader;
 
 		ShaderProgram geometryPassShader;
 

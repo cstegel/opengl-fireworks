@@ -17,7 +17,8 @@ public:
 	GBuffer(uint screenWidth, uint screenHeight);
 	~GBuffer();
 
-	void BindTextures(ShaderProgram & shader);
+	void BindCoreTextures(ShaderProgram & shader);
+	void BindStencilTexture(ShaderProgram & shader);
 	void UnbindTextures();
 
 	GLuint FBO; // frame buffer object
@@ -27,6 +28,7 @@ private:
 	Texture texNormalShininess;
 	Texture texAlbedoSpec;
 	GLuint depthBuff;
+	Texture texStencil;
 
 	uint screenWidth;
 	uint screenHeight;

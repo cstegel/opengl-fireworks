@@ -1,8 +1,9 @@
-#version 430
+#version 440
 
 layout (binding = 0) uniform sampler2D texPosition;
 layout (binding = 1) uniform sampler2D texNormalShininess;
 layout (binding = 2) uniform sampler2D texAlbedoSpecular;
+layout (binding = 3) uniform usampler2D texStencil;
 
 // these should match src/graphics/DisplayMode.hpp
 const int DISPLAY_NORMALS = 1;
@@ -10,6 +11,7 @@ const int DISPLAY_ALBEDO = 2;
 const int DISPLAY_SPECULAR = 3;
 const int DISPLAY_SHININESS = 4;
 const int DISPLAY_POSITION = 5;
+const int DISPLAY_STENCIL = 6;
 
 uniform int displayMode;
 
@@ -48,6 +50,11 @@ void main()
 		outFragColour.r = 0.5 + (pos.x / abs(pos.x)) * 0.5 * abs(pos.x) / (1.0 + abs(pos.x));
 		outFragColour.g = 0.5 + (pos.y / abs(pos.y)) * 0.5 * abs(pos.y) / (1.0 + abs(pos.y));
 		outFragColour.b = 0.5 + (pos.z / abs(pos.z)) * 0.5 * abs(pos.z) / (1.0 + abs(pos.z));
+	}
+	else if (displayMode == DISPLAY_STENCIL)
+	{
+		uvec4 stencil = texture(texStencil, inTexCoord);
+		outFragColour = vec4(float(stencil.r), float(stencil.g), float(stencil.a), 1.0f);
 	}
 	else
 	{

@@ -20,6 +20,7 @@ public:
 		SPECULAR,
 		ALBEDO_SPECULAR,
 		SHININESS,
+		STENCIL,
 	};
 
 	Texture() {}

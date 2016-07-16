@@ -9,6 +9,7 @@ layout (location = 3) in mat3 tangentToWorld;
 layout (location = 0) out vec3 outPosition;
 layout (location = 1) out vec4 outNormalShininess;
 layout (location = 2) out vec4 outAlbedoSpec;
+layout (location = 3) out uvec4 outStencil;
 
 uniform bool hasNormalTexture;
 uniform float shininess;
@@ -35,4 +36,6 @@ void main()
 
 	outNormalShininess.rgb = normal_World;
 	outNormalShininess.a = shininess;
+
+	outStencil.r = 1; // rest of vector is currently unused
 }

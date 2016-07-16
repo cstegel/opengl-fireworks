@@ -29,6 +29,14 @@ Renderer::Renderer(GraphicsManager &graphics)
 		GraphicsManager::GetShaderPath("GBufferDebug.frag").c_str() );
 	gBufferDebugShader.link();
 
+	// stencilShader.generateProgramObject();
+	// stencilShader.attachVertexShader(
+	// GraphicsManager::GetShaderPath("ShadingPass.vert").c_str() );
+	// stencilShader.attachFragmentShader(
+	// GraphicsManager::GetShaderPath("VolumetricLight.frag").c_str() );
+	// stencilShader.link();
+
+
 	// lightShader.generateProgramObject();
 	// lightShader.attachVertexShader(
 	// 	GraphicsManager::GetShaderPath("VertexShader.vert").c_str() );
@@ -78,15 +86,27 @@ void Renderer::Render(RenderContext & context)
 	{
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
+
+		// set stencil to 1 if depth + stencil test pass
+		glEnable(GL_STENCIL_TEST);
+		glStencilFunc(GL_ALWAYS, 0, 0xFF);
+		glStencilMask(0xFF);
+		glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+
 		glDepthMask(GL_TRUE);
 
-		// glDisable(GL_BLEND);
-		// glDisable(GL_STENCIL_TEST);
-
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClearStencil(1);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		renderModels(context, geometryPassShader);
+
+		glClearStencil(0);// TODO: remove
+		glClear(GL_STENCIL_BUFFER_BIT);
+
+		// ensure shading pass doesn't interfere with our stencil buffer
+		glDisable(GL_STENCIL_TEST);
+		glStencilMask(0x00);
 	}
 	geometryPassShader.disable();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -117,7 +137,11 @@ void Renderer::Render(RenderContext & context)
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		gBuffer.BindTextures(*shader);
+		gBuffer.BindCoreTextures(*shader);
+		if (displayMode == DisplayMode::STENCIL)
+		{
+			gBuffer.BindStencilTexture(*shader);
+		}
 
 		if (shouldBindViewPos)
 		{
@@ -136,6 +160,16 @@ void Renderer::Render(RenderContext & context)
 		gBuffer.UnbindTextures();
 	}
 	shader->disable();
+
+	// stencilShader.enable();
+	// {
+	// 	glEnablei(GL_BLEND, 0); // blend on the colour buffer
+	// 	glBlendEquationSeparate​(GL_FUNC_ADD, GL_MAX);
+	// 	glBlendFuncSeparate(1.0, 1.0, 1.0, 1.0);
+	//
+	// 	renderQuad();
+	// }
+	// stencilShader.disable();
 
 	// lightShader.enable();
 	// {
@@ -180,7 +214,8 @@ bool Renderer::isGBufferDebugDisplayMode(DisplayMode mode) const
 		mode == DisplayMode::ALBEDO ||
 		mode == DisplayMode::SPECULAR ||
 		mode == DisplayMode::SHININESS ||
-		mode == DisplayMode::POSITION)
+		mode == DisplayMode::POSITION ||
+		mode == DisplayMode::STENCIL)
 	{
 		return true;
 	}
