@@ -127,7 +127,7 @@ bool GameLogic::Frame(double dtSinceLastFrame)
 	{
 		uiInputMode = !uiInputMode;
 		game.input.LockFocus(uiInputMode);
-		game.input.ToggleCursor(!uiInputMode);
+		game.input.ToggleCursor(uiInputMode);
 	}
 
 	if      (game.input.IsPressed(GLFW_KEY_1)) displayMode = DisplayMode::REGULAR;
