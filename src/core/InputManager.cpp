@@ -237,6 +237,18 @@ namespace fw
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
 
+	void InputManager::ToggleCursor(bool enabled)
+	{
+		if (enabled)
+		{
+			EnableCursor();
+		}
+		else
+		{
+			DisableCursor();
+		}
+	}
+
 	int MouseButtonToKey(int button)
 	{
 		if (button > GLFW_MOUSE_BUTTON_LAST)

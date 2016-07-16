@@ -26,9 +26,11 @@ namespace fw
 		void initQuad();
 		void renderQuad();
 
+		bool isDebugDisplayMode(DisplayMode mode) const;
+
 		GraphicsManager &graphics;
-		ShaderProgram defaultShader;
-		ShaderProgram normalOutputShader;
+		ShaderProgram shadingPassShader;
+		ShaderProgram gBufferDebugShader;
 		ShaderProgram lightShader;
 
 		ShaderProgram geometryPassShader;

@@ -23,9 +23,9 @@ public:
 	GLuint FBO; // frame buffer object
 
 private:
-	GLuint texPosition;
-	GLuint texNormal;
-	GLuint texAlbedoSpec;
+	Texture texPosition;
+	Texture texNormal;
+	Texture texAlbedoSpec;
 	GLuint depthBuff;
 
 	uint screenWidth;

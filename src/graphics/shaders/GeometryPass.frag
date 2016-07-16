@@ -23,11 +23,11 @@ void main()
 
 	if (hasNormalTexture)
 	{
-		outNormal = texture(texNormal, inTexCoord).xyz;
-		outNormal = normalize(tangentToWorld * outNormal);
+		outNormal = texture(texNormal, inTexCoord).xyz * 2.0 - 1.0;
+		outNormal = normalize((tangentToWorld * outNormal + 1.0) / 2.0);
 	}
 	else
 	{
-		outNormal = (inNormal_World + 1) / 2.0f;
+		outNormal = normalize((inNormal_World + 1) / 2.0f);
 	}
 }

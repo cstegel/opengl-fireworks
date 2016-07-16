@@ -20,7 +20,7 @@ namespace fw
 GameLogic::GameLogic(Game & game)
 	: game(game), humanControlSystem(game.entityManager, game.input)
 {
-	displayMode = DisplayMode::REGULAR;
+	displayMode = DisplayMode::NORMALS;
 }
 
 void GameLogic::Init()
@@ -107,11 +107,11 @@ bool GameLogic::Frame(double dtSinceLastFrame)
 		{}
 
 		ImGui::Text("Display Mode");
-		if (ImGui::RadioButton("Regular (1)", (int*)&displayMode, (int)DisplayMode::REGULAR))
-		{}
-		if (ImGui::RadioButton("Normals (2)", (int*)&displayMode, (int)DisplayMode::NORMALS))
-		{}
-
+		ImGui::RadioButton("Regular (1)", (int*)&displayMode, (int)DisplayMode::REGULAR);
+		ImGui::RadioButton("Normals (2)", (int*)&displayMode, (int)DisplayMode::NORMALS);
+		ImGui::RadioButton("Albedo (3)", (int*)&displayMode, (int)DisplayMode::ALBEDO);
+		ImGui::RadioButton("Specular (4)", (int*)&displayMode, (int)DisplayMode::SPECULAR);
+		ImGui::RadioButton("Position (5)", (int*)&displayMode, (int)DisplayMode::POSITION);
 
 		// Create Button, and check if it was clicked:
 		if( ImGui::Button( "Quit Application" ) ) {
@@ -120,14 +120,19 @@ bool GameLogic::Frame(double dtSinceLastFrame)
 
 	ImGui::End();
 
-	if (game.input.IsPressed(GLFW_KEY_1))
+	// "~" or "`" key
+	if (game.input.IsPressed(GLFW_KEY_GRAVE_ACCENT))
 	{
-		displayMode = DisplayMode::REGULAR;
+		uiInputMode = !uiInputMode;
+		game.input.LockFocus(uiInputMode);
+		game.input.ToggleCursor(!uiInputMode);
 	}
-	else if (game.input.IsPressed(GLFW_KEY_2))
-	{
-		displayMode = DisplayMode::NORMALS;
-	}
+
+	if      (game.input.IsPressed(GLFW_KEY_1)) displayMode = DisplayMode::REGULAR;
+	else if (game.input.IsPressed(GLFW_KEY_2)) displayMode = DisplayMode::NORMALS;
+	else if (game.input.IsPressed(GLFW_KEY_3)) displayMode = DisplayMode::ALBEDO;
+	else if (game.input.IsPressed(GLFW_KEY_4)) displayMode = DisplayMode::SPECULAR;
+	else if (game.input.IsPressed(GLFW_KEY_5)) displayMode = DisplayMode::POSITION;
 
 	if (game.input.IsPressed(GLFW_KEY_N))
 	{

@@ -24,5 +24,6 @@ namespace fw
 
 		bool useNormalMaps = true;
 		DisplayMode displayMode;
+		bool uiInputMode = false; // true when user can move their mouse around the UI
 	};
 }

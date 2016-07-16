@@ -100,6 +100,7 @@ namespace fw
 
 		void DisableCursor();
 		void EnableCursor();
+		void ToggleCursor(bool enabled);
 
 		static void KeyInputCallback(
 			GLFWwindow *window,
