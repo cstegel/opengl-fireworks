@@ -50,8 +50,6 @@ Renderer::Renderer(GraphicsManager &graphics)
 		GraphicsManager::GetShaderPath("ShadingPass.frag").c_str() );
 	shadingPassShader.link();
 
-
-
 	initQuad();
 }
 
@@ -63,7 +61,7 @@ void Renderer::Render(RenderContext & context)
 	// update view/proj for this render cycle
 	context.CacheProjection();
 	glm::mat4 view = context.CacheView();
-	glm::vec3 viewPos(view * glm::vec4(0, 0, 0, 1));
+	glm::vec3 viewPos(glm::inverse(view) * glm::vec4(0, 0, 0, 1));
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -75,8 +73,8 @@ void Renderer::Render(RenderContext & context)
 		glEnable(GL_DEPTH_TEST);
 		glDepthMask(GL_TRUE);
 
-		glDisable(GL_BLEND);
-		glDisable(GL_STENCIL_TEST);
+		// glDisable(GL_BLEND);
+		// glDisable(GL_STENCIL_TEST);
 
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -115,6 +113,8 @@ void Renderer::Render(RenderContext & context)
 			glUniform3f(
 			shader->getUniformLocation("viewPos_World"),
 			viewPos.x, viewPos.y, viewPos.z);
+
+			std::cout << "x: " << viewPos.x << ", y: " << viewPos.y << ", z: " << viewPos.z << std::endl;
 		}
 
 		if (shouldBindLights)

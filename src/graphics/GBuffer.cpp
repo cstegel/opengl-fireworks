@@ -17,7 +17,7 @@ GBuffer::GBuffer(uint screenWidth, uint screenHeight)
 		Texture::Type::POSITION,
 		screenWidth,
 		screenHeight,
-		GL_RGBA16F ,
+		GL_RGB16F ,
 		GL_RGB,
 		GL_FLOAT,
 		NULL);
@@ -27,7 +27,7 @@ GBuffer::GBuffer(uint screenWidth, uint screenHeight)
 		Texture::Type::NORMAL,
 		screenWidth,
 		screenHeight,
-		GL_RGBA16F ,
+		GL_RGB16F ,
 		GL_RGB,
 		GL_FLOAT,
 		NULL);

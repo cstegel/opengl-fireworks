@@ -42,11 +42,12 @@ vec3 phongColour(PointLight light)
 	float diffuseStrength = max(0, dot(normalize(toLight), normal_World));
 	vec3 diffuse = diffuseStrength * matDiffuse;
 
-	float specCoeff = texture(texAlbedoSpecular, inTexCoord).a;
-	vec3 matSpec = vec3(specCoeff, specCoeff, specCoeff);
 	vec3 reflectDir = normalize(reflect(toLight, normal_World));
 	vec3 toViewer = normalize(viewPos_World - fragPos_World);
 	float specularStrength = max(0, dot(reflectDir, toViewer));
+
+	float specCoeff = texture(texAlbedoSpecular, inTexCoord).a;
+	vec3 matSpec = vec3(specCoeff, specCoeff, specCoeff);
 
 	vec3 specular = pow(specularStrength, shininess) * matSpec;
 
@@ -79,8 +80,8 @@ void main() {
 		colour += phongColour(pointLights[i]);
 	}
 
-	colour = uncharted2Tonemap(colour);
-	colour = gammaCorrect(colour);
+	// colour = uncharted2Tonemap(colour);
+	// colour = gammaCorrect(colour);
 
 	outFragColour = vec4(colour, 1.0);
 }

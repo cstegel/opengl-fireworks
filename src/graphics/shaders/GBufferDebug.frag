@@ -20,7 +20,7 @@ void main()
 {
 	if (displayMode == DISPLAY_NORMALS)
 	{
-		outFragColour = vec4(texture(texNormal, inTexCoord).rgb, 1.0f);
+		outFragColour = vec4((texture(texNormal, inTexCoord).rgb + 1) / 2, 1.0f);
 	}
 	else if (displayMode == DISPLAY_ALBEDO)
 	{
