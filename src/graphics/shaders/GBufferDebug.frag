@@ -33,14 +33,12 @@ void main()
 	}
 	else if (displayMode == DISPLAY_POSITION)
 	{
-		vec3 pos = texture(texPosition, inTexCoord).rgb;// / 100f;
-		// pos.x /= 100.0f;
-		// pos.y /= 100.0f;
-		// pos.z /= 100.0f;
-		// pos.x = pos.x / (1.0 + pos.x);
-		// pos.y = pos.y / (1.0 + pos.y);
-		// pos.z = pos.z / (1.0 + pos.z);
-		outFragColour = vec4(pos, 1.0f);
+		// divide to make visual transition smoother
+		vec3 pos = texture(texPosition, inTexCoord).rgb / 2.0;
+
+		outFragColour.r = 0.5 + (pos.x / abs(pos.x)) * 0.5 * abs(pos.x) / (1.0 + abs(pos.x));
+		outFragColour.g = 0.5 + (pos.y / abs(pos.y)) * 0.5 * abs(pos.y) / (1.0 + abs(pos.y));
+		outFragColour.b = 0.5 + (pos.z / abs(pos.z)) * 0.5 * abs(pos.z) / (1.0 + abs(pos.z));
 	}
 	else
 	{

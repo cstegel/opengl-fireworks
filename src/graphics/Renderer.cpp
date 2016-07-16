@@ -29,12 +29,12 @@ Renderer::Renderer(GraphicsManager &graphics)
 		GraphicsManager::GetShaderPath("GBufferDebug.frag").c_str() );
 	gBufferDebugShader.link();
 
-	lightShader.generateProgramObject();
-	lightShader.attachVertexShader(
-		GraphicsManager::GetShaderPath("VertexShader.vert").c_str() );
-	lightShader.attachFragmentShader(
-		GraphicsManager::GetShaderPath("Light.frag").c_str() );
-	lightShader.link();
+	// lightShader.generateProgramObject();
+	// lightShader.attachVertexShader(
+	// 	GraphicsManager::GetShaderPath("VertexShader.vert").c_str() );
+	// lightShader.attachFragmentShader(
+	// 	GraphicsManager::GetShaderPath("Light.frag").c_str() );
+	// lightShader.link();
 
 	geometryPassShader.generateProgramObject();
 	geometryPassShader.attachVertexShader(
