@@ -28,8 +28,8 @@ glm::mat4 Transform::GetModelTransform(ecs::EntityManager &manager)
 
 glm::vec3 Transform::GetForwardVec(const glm::vec3 & worldForward, ecs::EntityManager &manager)
 {
-	glm::mat3 modelNoTranslate(GetModelTransform(manager));
-	return glm::normalize(modelNoTranslate * worldForward);
+	glm::mat4 normalMatWorldToModel((GetModelTransform(manager)));
+	return glm::normalize(glm::vec3(normalMatWorldToModel * glm::vec4(worldForward, 0)));
 }
 
 void Transform::SetRelativeTo(ecs::Entity ent)

@@ -6,6 +6,7 @@
 #include "graphics/GBuffer.hpp"
 
 #include <Ecs.hh>
+#include <glm/glm.hpp>
 
 namespace fw
 {
@@ -22,7 +23,11 @@ namespace fw
 
 	private:
 		void bindWorldSpaceLights(ShaderProgram & shader, RenderContext & context);
-		void bindScreenSpaceLights(ShaderProgram & shader, RenderContext & context);
+		void bindScreenSpaceLights(
+			ShaderProgram & shader,
+			RenderContext & context,
+			const glm::vec3 & viewPos);
+
 		void renderModels(RenderContext & context, ShaderProgram & shader);
 		void initQuad();
 		void renderQuad();

@@ -13,6 +13,7 @@
 namespace fw
 {
 	class InputManager;
+	class Game;
 
 	class RenderContext
 	{
@@ -27,7 +28,7 @@ namespace fw
 			double startTime;
 		};
 
-		RenderContext(ecs::EntityManager & entityManager);
+		RenderContext(Game & game, ecs::EntityManager & entityManager);
 		virtual ~RenderContext();
 
 		void CreateWindow();
@@ -50,6 +51,8 @@ namespace fw
 		const glm::mat4 & CacheProjection();
 		const glm::mat4 & GetCachedProjection() const;
 
+		const glm::vec3 GetViewForward() const;
+
 		GLFWwindow *GetWindow() const;
 
 		int GetWindowWidth() const;
@@ -60,7 +63,6 @@ namespace fw
 
 		float AspectRatio() const;
 
-		ecs::EntityManager & entityManager;
 
 		DisplayMode GetDisplayMode() const;
 		void SetDisplayMode(DisplayMode mode);
@@ -71,14 +73,17 @@ namespace fw
 		RenderStage GetRenderStage() const;
 
 		/**
-		 * Returns a RAII timer that updates the time of this stage
-		 * when it is finished (the timer's destructor is called)
+		 * Returns a timer that updates the time of this stage
+		 * when it is finished (EndRenderStage() is called)
 		 */
 		Timer StartRenderStage(RenderStage stage);
 		void EndRenderStage(Timer & timer);
 
 		double GetRenderStageAvgTime(RenderStage stage) const;
 
+
+		Game & game;
+		ecs::EntityManager & entityManager;
 	private:
 		void validateView(ecs::Entity) const;
 

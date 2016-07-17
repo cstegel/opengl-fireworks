@@ -5,7 +5,9 @@ struct PointLight
 	vec2 position_Screen;
 	vec3 colour;
 
+	bool behindViewer;
 	float intensity;
+	float viewAngleReduction;
 	// vec2 attenuation; // [0] = linear, [1] = quadratic
 };
 
@@ -19,6 +21,7 @@ const float weight = 1.0f;
 layout (binding = 2) uniform sampler2D texAlbedoSpecular;
 layout (binding = 3) uniform usampler2D texStencil;
 uniform PointLight[N_POINT_LIGHTS] pointLights;
+uniform int numLights;
 
 layout (location = 0) in vec2 inTexCoord;
 
@@ -28,13 +31,18 @@ void main()
 {
 	vec3 accumulatedColour = vec3(0, 0, 0);
 
-	for (int i = 0; i < N_POINT_LIGHTS; i++)
+	for (int i = 0; i < min(numLights, N_POINT_LIGHTS); i++)
 	{
+		PointLight light = pointLights[i];
+		if (light.behindViewer)
+		{
+			continue;
+		}
+		
 		vec3 lightShaftColour = vec3(0, 0, 0);
 
 		vec2 texCoord = inTexCoord;
 		float illumDecay = 1.0f;
-		PointLight light = pointLights[i];
 
 		vec2 dTexCoord = light.position_Screen - inTexCoord;
 		dTexCoord /= N_SAMPLES * density;
@@ -52,7 +60,7 @@ void main()
 			texCoord += dTexCoord;
 		}
 
-		accumulatedColour += lightShaftColour;
+		accumulatedColour += lightShaftColour * light.viewAngleReduction;
 	}
 
 	outFragColour = vec4(exposure * accumulatedColour, 1.0f);

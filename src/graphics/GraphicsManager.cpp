@@ -17,7 +17,7 @@ GraphicsManager::GraphicsManager(Game & game) : game(game)
 		throw std::runtime_error("glfwInit() failed");
 	}
 
-	renderContext = make_shared<RenderContext>(game.entityManager);
+	renderContext = make_shared<RenderContext>(game, game.entityManager);
 	renderContext->CreateWindow();
 
 	renderer = make_shared<Renderer>(*this);

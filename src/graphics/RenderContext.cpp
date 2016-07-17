@@ -1,5 +1,6 @@
 #include "graphics/RenderContext.hpp"
 #include "core/InputManager.hpp"
+#include "core/Game.hpp"
 
 #include "ecs/components/View.hpp"
 #include "ecs/components/Transform.hpp"
@@ -15,8 +16,8 @@ RenderContext::Timer::Timer(RenderStage stage)
 	startTime = glfwGetTime();
 }
 
-RenderContext::RenderContext(ecs::EntityManager & entityManager)
-	: entityManager(entityManager)
+RenderContext::RenderContext(Game & game, ecs::EntityManager & entityManager)
+	: game(game), entityManager(entityManager)
 {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -174,6 +175,14 @@ const glm::mat4 & RenderContext::CacheProjection()
 const glm::mat4 & RenderContext::GetCachedProjection() const
 {
 	return cachedProjection;
+}
+
+const glm::vec3 RenderContext::GetViewForward() const
+{
+	ecs::Entity playerView = GetPlayerView();
+	ecs::Handle<Transform> viewTransform = playerView.Get<Transform>();
+
+	return viewTransform->GetForwardVec(game.GetWorldForward(), *playerView.GetManager());
 }
 
 RenderStage RenderContext::GetRenderStage() const

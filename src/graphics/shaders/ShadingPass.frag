@@ -17,6 +17,7 @@ layout (binding = 1) uniform sampler2D texNormalShininess;
 layout (binding = 2) uniform sampler2D texAlbedoSpecular;
 
 uniform vec3 viewPos_World;
+uniform int numLights;
 
 layout (location = 0) in vec2 inTexCoord;
 
@@ -57,7 +58,7 @@ vec3 phongColour(PointLight light)
 void main() {
 	vec3 colour = vec3(0, 0, 0);
 
-	for (int i = 0; i < N_POINT_LIGHTS; ++i)
+	for (int i = 0; i < min(numLights, N_POINT_LIGHTS); ++i)
 	{
 		colour += phongColour(pointLights[i]);
 	}
