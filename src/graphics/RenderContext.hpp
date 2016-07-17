@@ -3,6 +3,7 @@
 #include "Common.hpp"
 #include "graphics/DisplayMode.hpp"
 #include "graphics/RenderFeature.hpp"
+#include "graphics/RenderStage.hpp"
 
 #include <Ecs.hh>
 #include <GL/glew.h>
@@ -16,6 +17,16 @@ namespace fw
 	class RenderContext
 	{
 	public:
+		class Timer
+		{
+		private:
+			friend class RenderContext;
+			Timer(RenderStage stage);
+
+			RenderStage stage;
+			double startTime;
+		};
+
 		RenderContext(ecs::EntityManager & entityManager);
 		virtual ~RenderContext();
 
@@ -57,6 +68,17 @@ namespace fw
 		void ToggleRenderFeature(RenderFeature feature, bool enabled);
 		bool IsRenderFeatureEnabled(RenderFeature feature) const;
 
+		RenderStage GetRenderStage() const;
+
+		/**
+		 * Returns a RAII timer that updates the time of this stage
+		 * when it is finished (the timer's destructor is called)
+		 */
+		Timer StartRenderStage(RenderStage stage);
+		void EndRenderStage(Timer & timer);
+
+		double GetRenderStageAvgTime(RenderStage stage) const;
+
 	private:
 		void validateView(ecs::Entity) const;
 
@@ -70,5 +92,10 @@ namespace fw
 
 		DisplayMode displayMode;
 		std::bitset<static_cast<uint>(RenderFeature::NUM_VALUES)> activeRenderFeatures;
+
+		RenderStage currentRenderStage;
+
+		// exponential moving averages of times for render stages
+		unordered_map<RenderStage, double, EnumHash> renderTimes;
 	};
 }

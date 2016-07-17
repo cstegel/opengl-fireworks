@@ -87,7 +87,7 @@ void AudioManager::Play(SoundId sound, ecs::Entity location)
 
 	if (!sounds.at(sound).PlayNewSound(location))
 	{
-		throw std::runtime_error("failed to play sound " + to_string(static_cast<int>(sound)));
+		throw std::runtime_error("failed to play sound " + std::to_string(static_cast<int>(sound)));
 	}
 }
 

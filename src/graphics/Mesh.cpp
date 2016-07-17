@@ -1,5 +1,6 @@
 #include "Mesh.hpp"
 #include "graphics/RenderContext.hpp"
+#include "graphics/RenderStage.hpp"
 #include <glm/gtc/type_ptr.hpp>
 
 
@@ -26,28 +27,31 @@ void Mesh::Render(
 
 	glm::mat3 transposeNormalMatrix = glm::inverse(glm::mat3(transform));
 
-	// transpose it as it is loaded
-	glUniformMatrix3fv(
-		shader.getUniformLocation("normalMat"),
-		1, GL_TRUE, glm::value_ptr(transposeNormalMatrix)
-	);
-
 	glm::mat4 mvp = context.GetCachedProjection() * context.GetCachedView() * transform;
 
 	glUniformMatrix4fv(
-		shader.getUniformLocation("mvpMat"),
-		1, GL_FALSE, glm::value_ptr(mvp)
+	shader.getUniformLocation("mvpMat"),
+	1, GL_FALSE, glm::value_ptr(mvp)
 	);
 
-	glUniformMatrix4fv(
+	if (context.GetRenderStage() != RenderStage::LIGHT_MODELS)
+	{
+		// transpose it as it is loaded
+		glUniformMatrix3fv(
+		shader.getUniformLocation("normalMat"),
+		1, GL_TRUE, glm::value_ptr(transposeNormalMatrix)
+		);
+
+		glUniformMatrix4fv(
 		shader.getUniformLocation("modelMat"),
 		1, GL_FALSE, glm::value_ptr(transform)
-	);
+		);
 
-	glUniform1f(
+		glUniform1f(
 		shader.getUniformLocation("shininess"),
 		shininess
-	);
+		);
+	}
 
 	bool hasNormalTexture = false;
 

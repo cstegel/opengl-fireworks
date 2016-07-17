@@ -4,6 +4,7 @@
 #include "cs488/GlErrorCheck.hpp"
 #include "core/AssetManager.hpp"
 #include "graphics/GraphicsManager.hpp"
+#include "graphics/RenderStage.hpp"
 
 #include "ecs/components/View.hpp"
 #include "ecs/components/Transform.hpp"
@@ -36,13 +37,12 @@ Renderer::Renderer(GraphicsManager &graphics)
 	GraphicsManager::GetShaderPath("ScreenVolumetricLight.frag").c_str() );
 	stencilShader.link();
 
-
-	// lightShader.generateProgramObject();
-	// lightShader.attachVertexShader(
-	// 	GraphicsManager::GetShaderPath("VertexShader.vert").c_str() );
-	// lightShader.attachFragmentShader(
-	// 	GraphicsManager::GetShaderPath("Light.frag").c_str() );
-	// lightShader.link();
+	lightShader.generateProgramObject();
+	lightShader.attachVertexShader(
+		GraphicsManager::GetShaderPath("Light.vert").c_str() );
+	lightShader.attachFragmentShader(
+		GraphicsManager::GetShaderPath("Light.frag").c_str() );
+	lightShader.link();
 
 	lightDebugShader.generateProgramObject();
 	lightDebugShader.attachVertexShader(
@@ -124,6 +124,8 @@ void Renderer::Render(RenderContext & context)
 	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer.FBO);
 	geometryPassShader.enable();
 	{
+		auto timer = context.StartRenderStage(RenderStage::GEOMETRY);
+
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
 
@@ -133,6 +135,7 @@ void Renderer::Render(RenderContext & context)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		renderModels(context, geometryPassShader);
+		context.EndRenderStage(timer);
 	}
 	geometryPassShader.disable();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -157,6 +160,8 @@ void Renderer::Render(RenderContext & context)
 	glBindFramebuffer(GL_FRAMEBUFFER, postProcessFBO);
 	shader->enable();
 	{
+		auto timer = context.StartRenderStage(RenderStage::SHADING);
+
 		if (isGBufferDebugDisplayMode(displayMode))
 		{
 			glUniform1i(shader->getUniformLocation("displayMode"), (int)displayMode);
@@ -184,8 +189,9 @@ void Renderer::Render(RenderContext & context)
 		}
 
 		renderQuad();
-
 		gBuffer.UnbindTextures();
+
+		context.EndRenderStage(timer);
 	}
 	shader->disable();
 
@@ -194,6 +200,8 @@ void Renderer::Render(RenderContext & context)
 	{
 		stencilShader.enable();
 		{
+			auto timer = context.StartRenderStage(RenderStage::VOLUMETRIC_LIGHTING);
+
 			glEnablei(GL_BLEND, 0); // blend on the colour buffer
 			glBlendEquationSeparate(GL_FUNC_ADD, GL_MAX);
 			glBlendFuncSeparate(1.0, 1.0, 1.0, 1.0);
@@ -203,14 +211,45 @@ void Renderer::Render(RenderContext & context)
 
 			renderQuad();
 			glDisable(GL_BLEND);
+
+			context.EndRenderStage(timer);
 		}
 		stencilShader.disable();
 	}
+
+	lightShader.enable();
+	{
+		auto timer = context.StartRenderStage(RenderStage::LIGHT_MODELS);
+
+		for (ecs::Entity e : context.entityManager.EntitiesWith<PointLight, Transform>())
+		{
+			ecs::Handle<PointLight> pointLight = e.Get<PointLight>();
+
+			// make sure we don't actually modify the transform (copy it)
+			Transform transform = *e.Get<Transform>();
+
+			// light size depends asymptotically on its intensity
+			transform.Scale(1.0f - std::min(0.95f, 1.0f/(1.f + 0.05f*pointLight->intensity)));
+
+			glUniform3fv(
+			lightShader.getUniformLocation("lightColour"),
+			1, &pointLight->colour[0]);
+
+			Model & model = graphics.GetLightModel();
+
+			model.Render(context, lightShader, transform.GetModelTransform(*e.GetManager()));
+		}
+
+		context.EndRenderStage(timer);
+	}
+	lightShader.disable();
 
 	// switch back to window framebuffer when we do post processing (last step)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	postProcessShader.enable();
 	{
+		auto timer = context.StartRenderStage(RenderStage::POST_PROCESS);
+
 		bool gammaCorrect =
 			context.IsRenderFeatureEnabled(RenderFeature::GAMMA_CORRECT)
 			&& displayMode == DisplayMode::REGULAR;
@@ -225,39 +264,11 @@ void Renderer::Render(RenderContext & context)
 		texPostProcessInput.Bind(postProcessShader, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		renderQuad();
+
+		context.EndRenderStage(timer);
 	}
 	postProcessShader.disable();
 
-	// lightShader.enable();
-	// {
-	// 	glUniformMatrix4fv(
-	// 		lightShader.getUniformLocation("project"),
-	// 		1, GL_FALSE, value_ptr(proj));
-	//
-	// 	glUniformMatrix4fv(
-	// 		lightShader.getUniformLocation("view"),
-	// 		1, GL_FALSE, value_ptr(view));
-	//
-	// 	for (ecs::Entity e : context.entityManager.EntitiesWith<PointLight, Transform>())
-	// 	{
-	// 		ecs::Handle<PointLight> pointLight = e.Get<PointLight>();
-	//
-	// 		// make sure we don't actually modify the transform (copy it)
-	// 		Transform transform = *e.Get<Transform>();
-	//
-	// 		// light size depends asymptotically on its intensity
-	// 		transform.Scale(1.0f - std::min(0.95f, 1.0f/(1.f + 0.05f*pointLight->intensity)));
-	//
-	// 		glUniform3fv(
-	// 			lightShader.getUniformLocation("lightColour"),
-	// 			1, &pointLight->colour[0]);
-	//
-	// 		Model & model = graphics.GetLightModel();
-	//
-	// 		model.Render(context, lightShader, transform.GetModelTransform(*e.GetManager()));
-	// 	}
-	// }
-	// lightShader.disable();
 
 	ImGui::Render();
 
@@ -343,7 +354,7 @@ void Renderer::bindWorldSpaceLights(ShaderProgram & shader, RenderContext & cont
 		glm::vec3 colour = light->colour;
 		glm::vec2 atten = light->attenuation;
 
-		string var = "pointLights[" + to_string(i) + "]";
+		string var = "pointLights[" + std::to_string(i) + "]";
 		glUniform3f(shader.getUniformLocation(var + ".position"), pos.x, pos.y, pos.z);
 		glUniform3f(shader.getUniformLocation(var + ".colour"), colour.r, colour.g, colour.b);
 		glUniform1f(shader.getUniformLocation(var + ".intensity"), light->intensity);
@@ -370,7 +381,7 @@ void Renderer::bindScreenSpaceLights(ShaderProgram & shader, RenderContext & con
 		glm::vec3 colour = light->colour;
 		glm::vec2 atten = light->attenuation;
 
-		string var = "pointLights[" + to_string(i) + "]";
+		string var = "pointLights[" + std::to_string(i) + "]";
 		glUniform2f(shader.getUniformLocation(var + ".position_Screen"), uvScreenSpacePos.x, uvScreenSpacePos.y);
 		glUniform3f(shader.getUniformLocation(var + ".colour"), colour.r, colour.g, colour.b);
 		glUniform1f(shader.getUniformLocation(var + ".intensity"), light->intensity);

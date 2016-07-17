@@ -1,5 +1,6 @@
 #include "game/GameLogic.hpp"
 #include "core/Game.hpp"
+#include "graphics/RenderStage.hpp"
 
 #include "ecs/components/Transform.hpp"
 #include "ecs/components/ModelInstance.hpp"
@@ -9,6 +10,7 @@
 #include "audio/SoundId.hpp"
 
 #include <cmath>
+#include <iomanip>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
@@ -102,21 +104,51 @@ bool GameLogic::Frame(double dtSinceLastFrame)
 	ImGui::Begin("Properties", &showDebugWindow, ImVec2(100,100), opacity,
 			windowFlags);
 
-		ImGui::Text("Options)");
-		ImGui::Checkbox("Use Normal Maps (N)", &enableNormalMaps);
-		ImGui::Checkbox("Volumetric Lighting (V)", &enableSSVolumetricLighting);
-		ImGui::Checkbox("Gamma Correct (G)", &enableGammaCorrect);
-		ImGui::Checkbox("HDR (H)", &enableHDR);
+		if (ImGui::CollapsingHeader("Render Timing (ms)"))
+		{
+			double totalTime = 0;
+			for (uint stage = (uint)RenderStage::GEOMETRY; stage < (uint)RenderStage::NUM_STAGES; stage++)
+			{
+				float renderTime = game.graphics.GetRenderStageAvgTime((RenderStage)stage);
+				totalTime += renderTime;
 
-		ImGui::Text("Display Mode");
-		ImGui::RadioButton("Regular (1)", (int*)&displayMode, (int)DisplayMode::REGULAR);
-		ImGui::RadioButton("Normals (2)", (int*)&displayMode, (int)DisplayMode::NORMALS);
-		ImGui::RadioButton("Albedo (3)", (int*)&displayMode, (int)DisplayMode::ALBEDO);
-		ImGui::RadioButton("Specular (4)", (int*)&displayMode, (int)DisplayMode::SPECULAR);
-		ImGui::RadioButton("Shininess (5)", (int*)&displayMode, (int)DisplayMode::SHININESS);
-		ImGui::RadioButton("Position (6)", (int*)&displayMode, (int)DisplayMode::POSITION);
-		ImGui::RadioButton("Stencil (7)", (int*)&displayMode, (int)DisplayMode::STENCIL);
-		ImGui::RadioButton("Brightness (8)", (int*)&displayMode, (int)DisplayMode::BRIGHTNESS);
+				std::stringstream ss;
+				ss << fw::to_string((RenderStage)stage)
+				   << ": "
+				   << std::setprecision(2)
+				   << 1000*renderTime;
+
+				ImGui::Text(ss.str().c_str());
+			}
+
+			std::stringstream ss;
+			ss << "Total: " << ": " << std::setprecision(2) << 1000*totalTime;
+			ImGui::Text(ss.str().c_str());
+		}
+
+		ImGui::Spacing();
+
+		if (ImGui::CollapsingHeader("Options"))
+		{
+			ImGui::Checkbox("Use Normal Maps (N)", &enableNormalMaps);
+			ImGui::Checkbox("Volumetric Lighting (V)", &enableSSVolumetricLighting);
+			ImGui::Checkbox("Gamma Correct (G)", &enableGammaCorrect);
+			ImGui::Checkbox("HDR (H)", &enableHDR);
+		}
+
+		ImGui::Spacing();
+
+		if (ImGui::CollapsingHeader("Display Mode"))
+		{
+			ImGui::RadioButton("Regular (1)", (int*)&displayMode, (int)DisplayMode::REGULAR);
+			ImGui::RadioButton("Normals (2)", (int*)&displayMode, (int)DisplayMode::NORMALS);
+			ImGui::RadioButton("Albedo (3)", (int*)&displayMode, (int)DisplayMode::ALBEDO);
+			ImGui::RadioButton("Specular (4)", (int*)&displayMode, (int)DisplayMode::SPECULAR);
+			ImGui::RadioButton("Shininess (5)", (int*)&displayMode, (int)DisplayMode::SHININESS);
+			ImGui::RadioButton("Position (6)", (int*)&displayMode, (int)DisplayMode::POSITION);
+			ImGui::RadioButton("Stencil (7)", (int*)&displayMode, (int)DisplayMode::STENCIL);
+			ImGui::RadioButton("Brightness (8)", (int*)&displayMode, (int)DisplayMode::BRIGHTNESS);
+		}
 
 		// Create Button, and check if it was clicked:
 		if( ImGui::Button( "Quit Application" ) ) {
@@ -133,7 +165,7 @@ bool GameLogic::Frame(double dtSinceLastFrame)
 		game.input.ToggleCursor(uiInputMode);
 	}
 
-	if      (game.input.IsPressed(GLFW_KEY_1)) displayMode = DisplayMode::REGULAR;
+	if	  (game.input.IsPressed(GLFW_KEY_1)) displayMode = DisplayMode::REGULAR;
 	else if (game.input.IsPressed(GLFW_KEY_2)) displayMode = DisplayMode::NORMALS;
 	else if (game.input.IsPressed(GLFW_KEY_3)) displayMode = DisplayMode::ALBEDO;
 	else if (game.input.IsPressed(GLFW_KEY_4)) displayMode = DisplayMode::SPECULAR;

@@ -13,6 +13,7 @@
 #include "graphics/Model.hpp"
 #include "graphics/DisplayMode.hpp"
 #include "graphics/RenderFeature.hpp"
+#include "graphics/RenderStage.hpp"
 #include "core/InputManager.hpp"
 #include "core/AssetManager.hpp"
 
@@ -51,6 +52,8 @@ namespace fw
 		// returns if the feature was toggled to "enabled"
 		void ToggleRenderFeature(RenderFeature feature, bool enabled);
 		bool IsRenderFeatureEnabled(RenderFeature feature) const;
+
+		double GetRenderStageAvgTime(RenderStage stage) const;
 
 	private:
 		static const string LIGHT_MODEL;

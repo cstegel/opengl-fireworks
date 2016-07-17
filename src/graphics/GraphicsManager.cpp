@@ -39,6 +39,11 @@ GraphicsManager::~GraphicsManager()
 	glfwTerminate();
 }
 
+double GraphicsManager::GetRenderStageAvgTime(RenderStage stage) const
+{
+	return renderContext->GetRenderStageAvgTime(stage);
+}
+
 uint GraphicsManager::GetWindowWidth() const
 {
 	return renderContext->GetWindowWidth();
