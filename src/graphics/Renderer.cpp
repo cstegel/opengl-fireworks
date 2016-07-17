@@ -206,7 +206,9 @@ void Renderer::Render(RenderContext & context)
 			glBlendEquationSeparate(GL_FUNC_ADD, GL_MAX);
 			glBlendFuncSeparate(1.0, 1.0, 1.0, 1.0);
 
-			gBuffer.BindStencilTexture(*shader);
+			// volumetric lighting needs to sample sky colour so bind albedo texture
+			gBuffer.BindCoreTextures(stencilShader);
+			gBuffer.BindStencilTexture(stencilShader);
 			bindScreenSpaceLights(stencilShader, context);
 
 			renderQuad();
@@ -383,9 +385,9 @@ void Renderer::bindScreenSpaceLights(ShaderProgram & shader, RenderContext & con
 
 		string var = "pointLights[" + std::to_string(i) + "]";
 		glUniform2f(shader.getUniformLocation(var + ".position_Screen"), uvScreenSpacePos.x, uvScreenSpacePos.y);
-		glUniform3f(shader.getUniformLocation(var + ".colour"), colour.r, colour.g, colour.b);
-		glUniform1f(shader.getUniformLocation(var + ".intensity"), light->intensity);
-		glUniform2f(shader.getUniformLocation(var + ".attenuation"), atten.x, atten.y);
+		// glUniform3f(shader.getUniformLocation(var + ".colour"), colour.r, colour.g, colour.b);
+		// glUniform1f(shader.getUniformLocation(var + ".intensity"), light->intensity);
+		// glUniform2f(shader.getUniformLocation(var + ".attenuation"), atten.x, atten.y);
 
 		i++;
 	}
