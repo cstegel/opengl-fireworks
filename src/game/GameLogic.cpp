@@ -5,6 +5,7 @@
 #include "ecs/components/Transform.hpp"
 #include "ecs/components/ModelInstance.hpp"
 #include "ecs/components/View.hpp"
+#include "ecs/components/Physics.hpp"
 #include "ecs/components/PointLight.hpp"
 
 #include "audio/SoundId.hpp"
@@ -54,6 +55,7 @@ void GameLogic::Init()
 	alduinTransform->Rotate(glm::radians(-45.f), glm::vec3(0, 1, 0));
 	alduinTransform->Scale(0.01);
 	alduin.Assign<ModelInstance>("alduin");
+	alduin.Assign<Physics>(glm::vec3(0, 10, 0), glm::vec3(0, 0, 0), 1.0f);
 
 	ecs::Entity ground = game.entityManager.NewEntity();
 	ecs::Handle<Transform> groundTransform = ground.Assign<Transform>();
@@ -80,6 +82,13 @@ void GameLogic::Init()
 	// auto pointLight2 = light2.Assign<PointLight>();
 	// pointLight2->intensity = 10;
 
+	// firework spawners
+	// ecs::Entity fSpawner = game.entityManager.NewEntity();
+	// auto fSpawnerTransform = fSpawner.Assign<Transform>();
+	// fSpawnerTransform->Translate(0, 0, 0);
+
+
+
 	game.audio.Play(SoundId::DRAGON_ROAR, alduin);
 }
 
@@ -89,7 +98,20 @@ GameLogic::~GameLogic()
 
 bool GameLogic::Frame(double dtSinceLastFrame)
 {
-	if (!humanControlSystem.Frame(dtSinceLastFrame)) return false;
+	if (!guiLogic(dtSinceLastFrame)) return false;
+	if (!appLogic(dtSinceLastFrame)) return false;
+
+	return true;
+}
+
+bool GameLogic::appLogic(double dt)
+{
+	if (!humanControlSystem.Frame(dt)) return false;
+	return true;
+}
+
+bool GameLogic::guiLogic(double dt)
+{
 
 	static bool firstRun(true);
 	if (firstRun) {

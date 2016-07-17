@@ -19,14 +19,16 @@ public:
 	 * This involves computing the incremental model transforms for any entities
 	 * that this placement is relative to.
 	 */
-	glm::mat4 GetModelTransform(ecs::EntityManager &manager);
+	glm::mat4 GetModelTransform();
 
 	/**
 	 * Return the world-space direction that this transform causes the entity to face.
 	 * This will be computed by obtaining the model transform so it may be slow
 	 * for hierarchical entities.
 	 */
-	glm::vec3 GetForwardVec(const glm::vec3 & worldForward, ecs::EntityManager &manager);
+	glm::vec3 GetForwardVec(const glm::vec3 & worldForward);
+
+	glm::vec3 GetPosition();
 
 	/**
 	 * Change the local rotation by "radians" amount about the local "axis"
@@ -59,7 +61,7 @@ public:
 	glm::quat rotate;
 
 private:
-	ecs::Entity::Id relativeTo;
+	ecs::Entity relativeTo;
 };
 
 }

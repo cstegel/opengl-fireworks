@@ -11,7 +11,7 @@ struct PointLight
 	// vec2 attenuation; // [0] = linear, [1] = quadratic
 };
 
-#define N_POINT_LIGHTS 1
+#define N_POINT_LIGHTS 8
 const uint N_SAMPLES = 200;
 const float density = 1.0f;
 const float decay = 0.8f;

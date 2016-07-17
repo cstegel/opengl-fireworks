@@ -9,27 +9,32 @@
 namespace fw
 {
 
-glm::mat4 Transform::GetModelTransform(ecs::EntityManager &manager)
+glm::mat4 Transform::GetModelTransform()
 {
 	glm::mat4 model;
 
-	if (this->relativeTo != ecs::Entity::Id())
+	if (relativeTo != ecs::Entity())
 	{
-		if (!manager.Has<Transform>(this->relativeTo))
+		if (!relativeTo.Has<Transform>())
 		{
 			throw std::runtime_error("cannot be relative to something that does not have a transform");
 		}
 
-		model = manager.Get<Transform>(this->relativeTo)->GetModelTransform(manager);
+		model = relativeTo.Get<Transform>()->GetModelTransform();
 	}
 
 	return model * this->translate * GetRotateMatrix() * this->scale;
 }
 
-glm::vec3 Transform::GetForwardVec(const glm::vec3 & worldForward, ecs::EntityManager &manager)
+glm::vec3 Transform::GetForwardVec(const glm::vec3 & worldForward)
 {
-	glm::mat4 normalMatWorldToModel((GetModelTransform(manager)));
+	glm::mat4 normalMatWorldToModel((GetModelTransform()));
 	return glm::normalize(glm::vec3(normalMatWorldToModel * glm::vec4(worldForward, 0)));
+}
+
+glm::vec3 Transform::GetPosition()
+{
+	return glm::vec3(GetModelTransform() * glm::vec4(0, 0, 0, 1));
 }
 
 void Transform::SetRelativeTo(ecs::Entity ent)
@@ -42,7 +47,7 @@ void Transform::SetRelativeTo(ecs::Entity ent)
 		throw std::runtime_error(ss.str());
 	}
 
-	this->relativeTo = ent.GetId();
+	this->relativeTo = ent;
 }
 
 void Transform::Rotate(float radians, glm::vec3 axis)

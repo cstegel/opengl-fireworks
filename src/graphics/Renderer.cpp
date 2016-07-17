@@ -13,7 +13,6 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/ext.hpp>
 #include <imgui/imgui.h>
 
 #include <algorithm>
@@ -246,7 +245,7 @@ void Renderer::Render(RenderContext & context)
 
 			Model & model = graphics.GetLightModel();
 
-			model.Render(context, lightShader, transform.GetModelTransform(*e.GetManager()));
+			model.Render(context, lightShader, transform.GetModelTransform());
 		}
 
 		context.EndRenderStage(timer);
@@ -349,7 +348,7 @@ void Renderer::renderModels(RenderContext & context, ShaderProgram & shader)
 		ecs::Handle<Transform> transform = e.Get<Transform>();
 
 		Model & model = graphics.GetModel(modelInstance->modelId);
-		model.Render(context, shader, transform->GetModelTransform(*e.GetManager()));
+		model.Render(context, shader, transform->GetModelTransform());
 	}
 }
 
@@ -361,7 +360,7 @@ void Renderer::bindWorldSpaceLights(ShaderProgram & shader, RenderContext & cont
 		ecs::Handle<PointLight> light = e.Get<PointLight>();
 		ecs::Handle<Transform> transform = e.Get<Transform>();
 
-		glm::vec4 pos = transform->GetModelTransform(*e.GetManager()) * glm::vec4(0, 0, 0, 1);
+		glm::vec3 pos = transform->GetPosition();
 		glm::vec3 colour = light->colour;
 		glm::vec2 atten = light->attenuation;
 
@@ -391,22 +390,18 @@ void Renderer::bindScreenSpaceLights(
 		ecs::Handle<PointLight> light = e.Get<PointLight>();
 		ecs::Handle<Transform> transform = e.Get<Transform>();
 
-		glm::vec4 worldPos = transform->GetModelTransform(*e.GetManager()) * glm::vec4(0, 0, 0, 1);
+		glm::vec4 worldPos = glm::vec4(transform->GetPosition(), 1);
 		glm::vec4 clipSpacePos = projView * worldPos;
 		glm::vec2 ndcSpacePos = glm::vec2(clipSpacePos) / clipSpacePos.w;
 		glm::vec2 uvScreenSpacePos = (ndcSpacePos + glm::vec2(1, 1)) / 2.0f;
-		glm::vec3 colour = light->colour;
-		glm::vec2 atten = light->attenuation;
+		// glm::vec3 colour = light->colour;
+		// glm::vec2 atten = light->attenuation;
 
 		// reduce the volumetric light effect as the screen position goes to infinity
 		float viewAngleReduction = 1.0f / (1.0f + fabs(glm::length(ndcSpacePos)));
 
 		glm::vec3 viewToLight = glm::vec3(worldPos) - viewPos;
 		bool behindViewer = glm::dot(viewToLight, viewForward) < 0;
-
-
-		std::cout << "view fward: " << glm::to_string(viewForward) << ", to light: " << glm::to_string(glm::vec3(viewToLight)) << std::endl;
-		std::cout << "dot: " << glm::dot(viewToLight, viewForward) << std::endl;
 
 		string var = "pointLights[" + std::to_string(i) + "]";
 		glUniform1f(shader.getUniformLocation(var + ".viewAngleReduction"), viewAngleReduction);

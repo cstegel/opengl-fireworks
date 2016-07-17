@@ -49,13 +49,9 @@ bool AudioManager::Frame()
 	validateEntity(player);
 
 	ecs::Handle<Transform> transform = player.Get<Transform>();
-	glm::mat4 model = transform->GetModelTransform(*player.GetManager());
 
-	glm::vec3 position = glm::vec3(model * glm::vec4(0, 0, 0, 1));
-	glm::vec3 forward = transform->GetForwardVec(
-		game.GetWorldForward(),
-		*player.GetManager()
-	);
+	glm::vec3 position = transform->GetPosition();
+	glm::vec3 forward = transform->GetForwardVec(game.GetWorldForward());
 
 	glm::vec3 up = game.GetWorldUp();
 

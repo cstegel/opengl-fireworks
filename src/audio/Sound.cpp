@@ -103,8 +103,7 @@ bool Sound::Stop(ALuint source)
 void Sound::setSourceKinematics(ALuint source, ecs::Entity location)
 {
 	validateEntity(location);
-	glm::mat4 transform = location.Get<Transform>()->GetModelTransform(*location.GetManager());
-	glm::vec4 pos = transform * glm::vec4(0, 0, 0, 1);
+	glm::vec3 pos = location.Get<Transform>()->GetPosition();
 
 	alSource3f(source, AL_POSITION, pos.x, pos.y, pos.z);
 	alSource3f(source, AL_VELOCITY, 0, 0, 0); // TODO

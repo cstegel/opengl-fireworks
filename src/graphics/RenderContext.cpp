@@ -152,7 +152,7 @@ const glm::mat4 & RenderContext::CacheView()
 	ecs::Entity playerView = GetPlayerView();
 	ecs::Handle<Transform> transformComp = playerView.Get<Transform>();
 
-	cachedView = glm::inverse(transformComp->GetModelTransform(*playerView.GetManager()));
+	cachedView = glm::inverse(transformComp->GetModelTransform());
 	return cachedView;
 }
 
@@ -182,7 +182,7 @@ const glm::vec3 RenderContext::GetViewForward() const
 	ecs::Entity playerView = GetPlayerView();
 	ecs::Handle<Transform> viewTransform = playerView.Get<Transform>();
 
-	return viewTransform->GetForwardVec(game.GetWorldForward(), *playerView.GetManager());
+	return viewTransform->GetForwardVec(game.GetWorldForward());
 }
 
 RenderStage RenderContext::GetRenderStage() const

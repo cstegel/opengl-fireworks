@@ -5,17 +5,19 @@
 #include "ecs/components/View.hpp"
 #include "ecs/components/ModelInstance.hpp"
 #include "ecs/components/PointLight.hpp"
+#include "ecs/components/Physics.hpp"
 
 
 namespace fw
 {
-	Game::Game() : graphics(*this), audio(*this), logic(*this)
+	Game::Game() : graphics(*this), audio(*this), logic(*this), physics(*this)
 	{
 		entityManager.RegisterComponentType<HumanController>();
+		entityManager.RegisterComponentType<ModelInstance>();
+		entityManager.RegisterComponentType<Physics>();
+		entityManager.RegisterComponentType<PointLight>();
 		entityManager.RegisterComponentType<Transform>();
 		entityManager.RegisterComponentType<View>();
-		entityManager.RegisterComponentType<ModelInstance>();
-		entityManager.RegisterComponentType<PointLight>();
 
 		worldUp = glm::vec3(0, 1, 0);
 		worldForward = glm::vec3(0, 0, -1);
@@ -23,7 +25,6 @@ namespace fw
 
 	Game::~Game()
 	{
-
 	}
 
 	glm::vec3 Game::GetWorldUp() const
@@ -68,6 +69,7 @@ namespace fw
 		}
 
 		if (!logic.Frame(dt)) return false;
+		if (!physics.Frame(dt)) return false;
 		if (!graphics.Frame()) return false;
 		if (!audio.Frame()) return false;
 

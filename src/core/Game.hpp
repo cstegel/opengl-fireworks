@@ -4,6 +4,7 @@
 #include "core/InputManager.hpp"
 #include "game/GameLogic.hpp"
 #include "audio/AudioManager.hpp"
+#include "physics/PhysicsManager.hpp"
 #include "Common.hpp"
 
 #include <Ecs.hh>
@@ -26,6 +27,7 @@ namespace fw
 		AudioManager audio;
 		GameLogic logic;
 		InputManager input;
+		PhysicsManager physics;
 		ecs::EntityManager entityManager;
 
 	private:

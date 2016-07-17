@@ -16,7 +16,11 @@ namespace fw
 
 		void Init();
 		bool Frame(double dtSinceLastFrame);
+		
 	private:
+		bool appLogic(double dt);
+		bool guiLogic(double dt);
+
 		Game & game;
 		HumanControlSystem humanControlSystem;
 
