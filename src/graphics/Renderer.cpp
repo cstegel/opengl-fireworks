@@ -29,12 +29,12 @@ Renderer::Renderer(GraphicsManager &graphics)
 		GraphicsManager::GetShaderPath("GBufferDebug.frag").c_str() );
 	gBufferDebugShader.link();
 
-	// stencilShader.generateProgramObject();
-	// stencilShader.attachVertexShader(
-	// GraphicsManager::GetShaderPath("ShadingPass.vert").c_str() );
-	// stencilShader.attachFragmentShader(
-	// GraphicsManager::GetShaderPath("VolumetricLight.frag").c_str() );
-	// stencilShader.link();
+	stencilShader.generateProgramObject();
+	stencilShader.attachVertexShader(
+	GraphicsManager::GetShaderPath("ShadingPass.vert").c_str() );
+	stencilShader.attachFragmentShader(
+	GraphicsManager::GetShaderPath("ScreenVolumetricLight.frag").c_str() );
+	stencilShader.link();
 
 
 	// lightShader.generateProgramObject();
@@ -51,6 +51,13 @@ Renderer::Renderer(GraphicsManager &graphics)
 		GraphicsManager::GetShaderPath("LightDebug.frag").c_str() );
 	lightDebugShader.link();
 
+	postProcessShader.generateProgramObject();
+	postProcessShader.attachVertexShader(
+		GraphicsManager::GetShaderPath("ShadingPass.vert").c_str() );
+	postProcessShader.attachFragmentShader(
+		GraphicsManager::GetShaderPath("PostProcess.frag").c_str() );
+	postProcessShader.link();
+
 	geometryPassShader.generateProgramObject();
 	geometryPassShader.attachVertexShader(
 		GraphicsManager::GetShaderPath("GeometryPass.vert").c_str() );
@@ -65,11 +72,44 @@ Renderer::Renderer(GraphicsManager &graphics)
 		GraphicsManager::GetShaderPath("ShadingPass.frag").c_str() );
 	shadingPassShader.link();
 
+	initPostProcessFBO();
+
 	initQuad();
 }
 
 Renderer::~Renderer()
 {}
+
+// should clean this up by splitting into a class
+void Renderer::initPostProcessFBO()
+{
+	glGenFramebuffers(1, &postProcessFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, postProcessFBO);
+
+	texPostProcessInput = Texture(
+		Texture::Type::POST_PROCESS_INPUT,
+		graphics.GetWindowWidth(),
+		graphics.GetWindowHeight(),
+		GL_RGBA32F,
+		GL_RGBA,
+		GL_FLOAT,
+		NULL);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texPostProcessInput.id, 0);
+
+	GLuint attachments[1] = {
+		GL_COLOR_ATTACHMENT0,
+	};
+	glDrawBuffers(1, attachments);
+
+	CHECK_GL_ERRORS;
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		throw std::runtime_error("G-Buffer is not complete");
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
 void Renderer::Render(RenderContext & context)
 {
@@ -87,26 +127,12 @@ void Renderer::Render(RenderContext & context)
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
 
-		// set stencil to 1 if depth + stencil test pass
-		glEnable(GL_STENCIL_TEST);
-		glStencilFunc(GL_ALWAYS, 0, 0xFF);
-		glStencilMask(0xFF);
-		glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
-
 		glDepthMask(GL_TRUE);
 
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		glClearStencil(1);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		glClearColor(0.0f, 0.0f, 0.4f, 1.0f); // blue sky
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		renderModels(context, geometryPassShader);
-
-		glClearStencil(0);// TODO: remove
-		glClear(GL_STENCIL_BUFFER_BIT);
-
-		// ensure shading pass doesn't interfere with our stencil buffer
-		glDisable(GL_STENCIL_TEST);
-		glStencilMask(0x00);
 	}
 	geometryPassShader.disable();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -127,6 +153,8 @@ void Renderer::Render(RenderContext & context)
 		shader = &lightDebugShader;
 	}
 
+	// everything after geometry pass should render to the post process FBO texture
+	glBindFramebuffer(GL_FRAMEBUFFER, postProcessFBO);
 	shader->enable();
 	{
 		if (isGBufferDebugDisplayMode(displayMode))
@@ -152,7 +180,7 @@ void Renderer::Render(RenderContext & context)
 
 		if (shouldBindLights)
 		{
-			bindLights(*shader, context);
+			bindWorldSpaceLights(*shader, context);
 		}
 
 		renderQuad();
@@ -161,15 +189,44 @@ void Renderer::Render(RenderContext & context)
 	}
 	shader->disable();
 
-	// stencilShader.enable();
-	// {
-	// 	glEnablei(GL_BLEND, 0); // blend on the colour buffer
-	// 	glBlendEquationSeparate​(GL_FUNC_ADD, GL_MAX);
-	// 	glBlendFuncSeparate(1.0, 1.0, 1.0, 1.0);
-	//
-	// 	renderQuad();
-	// }
-	// stencilShader.disable();
+	if (context.IsRenderFeatureEnabled(RenderFeature::SCREEN_SPACE_VOLUMETRIC_LIGHTING)
+		&& displayMode == DisplayMode::REGULAR)
+	{
+		stencilShader.enable();
+		{
+			glEnablei(GL_BLEND, 0); // blend on the colour buffer
+			glBlendEquationSeparate(GL_FUNC_ADD, GL_MAX);
+			glBlendFuncSeparate(1.0, 1.0, 1.0, 1.0);
+
+			gBuffer.BindStencilTexture(*shader);
+			bindScreenSpaceLights(stencilShader, context);
+
+			renderQuad();
+			glDisable(GL_BLEND);
+		}
+		stencilShader.disable();
+	}
+
+	// switch back to window framebuffer when we do post processing (last step)
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	postProcessShader.enable();
+	{
+		bool gammaCorrect =
+			context.IsRenderFeatureEnabled(RenderFeature::GAMMA_CORRECT)
+			&& displayMode == DisplayMode::REGULAR;
+
+		bool hdr =
+			context.IsRenderFeatureEnabled(RenderFeature::HDR)
+			&& displayMode == DisplayMode::REGULAR;
+
+		glUniform1i(postProcessShader.getUniformLocation("doGammaCorrect"), gammaCorrect);
+		glUniform1i(postProcessShader.getUniformLocation("doHDR"), hdr);
+
+		texPostProcessInput.Bind(postProcessShader, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		renderQuad();
+	}
+	postProcessShader.disable();
 
 	// lightShader.enable();
 	// {
@@ -274,7 +331,7 @@ void Renderer::renderModels(RenderContext & context, ShaderProgram & shader)
 	}
 }
 
-void Renderer::bindLights(ShaderProgram & shader, RenderContext & context)
+void Renderer::bindWorldSpaceLights(ShaderProgram & shader, RenderContext & context)
 {
 	uint i = 0;
 	for (ecs::Entity e : context.entityManager.EntitiesWith<PointLight, Transform>())
@@ -288,6 +345,33 @@ void Renderer::bindLights(ShaderProgram & shader, RenderContext & context)
 
 		string var = "pointLights[" + to_string(i) + "]";
 		glUniform3f(shader.getUniformLocation(var + ".position"), pos.x, pos.y, pos.z);
+		glUniform3f(shader.getUniformLocation(var + ".colour"), colour.r, colour.g, colour.b);
+		glUniform1f(shader.getUniformLocation(var + ".intensity"), light->intensity);
+		glUniform2f(shader.getUniformLocation(var + ".attenuation"), atten.x, atten.y);
+
+		i++;
+	}
+}
+
+void Renderer::bindScreenSpaceLights(ShaderProgram & shader, RenderContext & context)
+{
+	glm::mat4 projView = context.GetCachedProjection() * context.GetCachedView();
+
+	uint i = 0;
+	for (ecs::Entity e : context.entityManager.EntitiesWith<PointLight, Transform>())
+	{
+		ecs::Handle<PointLight> light = e.Get<PointLight>();
+		ecs::Handle<Transform> transform = e.Get<Transform>();
+
+		glm::vec4 worldPos = transform->GetModelTransform(*e.GetManager()) * glm::vec4(0, 0, 0, 1);
+		glm::vec4 clipSpacePos = projView * worldPos;
+		glm::vec2 ndcSpacePos = glm::vec2(clipSpacePos) / clipSpacePos.w;
+		glm::vec2 uvScreenSpacePos = (ndcSpacePos + glm::vec2(1, 1)) / 2.0f;
+		glm::vec3 colour = light->colour;
+		glm::vec2 atten = light->attenuation;
+
+		string var = "pointLights[" + to_string(i) + "]";
+		glUniform2f(shader.getUniformLocation(var + ".position_Screen"), uvScreenSpacePos.x, uvScreenSpacePos.y);
 		glUniform3f(shader.getUniformLocation(var + ".colour"), colour.r, colour.g, colour.b);
 		glUniform1f(shader.getUniformLocation(var + ".intensity"), light->intensity);
 		glUniform2f(shader.getUniformLocation(var + ".attenuation"), atten.x, atten.y);

@@ -14,6 +14,7 @@ unordered_map<Texture::Type, string, EnumHash> Texture::typeToGlslVar = {
 	{Texture::Type::POSITION, "texPosition"},
 	{Texture::Type::ALBEDO_SPECULAR, "texAlbedoSpecular"},
 	{Texture::Type::STENCIL, "texStencil"},
+	{Texture::Type::POST_PROCESS_INPUT, "texPostProcessInput"},
 };
 
 unordered_map<aiTextureType, Texture::Type, EnumHash> Texture::aiTypeToTexType = {

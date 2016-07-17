@@ -1,4 +1,4 @@
-#version 440
+#version 430
 
 layout (binding = 0) uniform sampler2D texPosition;
 layout (binding = 1) uniform sampler2D texNormalShininess;
@@ -53,8 +53,8 @@ void main()
 	}
 	else if (displayMode == DISPLAY_STENCIL)
 	{
-		uvec4 stencil = texture(texStencil, inTexCoord);
-		outFragColour = vec4(float(stencil.r), float(stencil.g), float(stencil.a), 1.0f);
+		float stencil = float(texture(texStencil, inTexCoord).r);
+		outFragColour = vec4(stencil, stencil, stencil, 1.0f);
 	}
 	else
 	{

@@ -44,16 +44,6 @@ GBuffer::GBuffer(uint screenWidth, uint screenHeight)
 		NULL);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, texAlbedoSpec.id, 0);
 
-	texAlbedoSpec = Texture(
-		Texture::Type::ALBEDO_SPECULAR,
-		screenWidth,
-		screenHeight,
-		GL_RGBA16F,
-		GL_RGBA,
-		GL_FLOAT,
-		NULL);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, texAlbedoSpec.id, 0);
-
 	// I can't for the life of me get this working as a stencil attachment so I'm using colour attachment
 	texStencil = Texture(
 		Texture::Type::STENCIL,

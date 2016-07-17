@@ -21,6 +21,7 @@ public:
 		ALBEDO_SPECULAR,
 		SHININESS,
 		STENCIL,
+		POST_PROCESS_INPUT,
 	};
 
 	Texture() {}

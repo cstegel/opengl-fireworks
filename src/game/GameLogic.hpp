@@ -22,7 +22,10 @@ namespace fw
 
 		ecs::Entity player;
 
-		bool useNormalMaps = true;
+		bool enableNormalMaps = true;
+		bool enableSSVolumetricLighting = true;
+		bool enableHDR = true;
+		bool enableGammaCorrect = true;
 		DisplayMode displayMode;
 		bool uiInputMode = false; // true when user can move their mouse around the UI
 	};

@@ -54,23 +54,23 @@ vec3 phongColour(PointLight light)
 	return ambient + localBrightness * light.colour *  (diffuse + specular);
 }
 
-vec3 gammaCorrect(vec3 colour)
-{
-	return pow(colour, vec3(1/2.2, 1/2.2, 1/2.2));
-}
-
-// as explained by http://filmicgames.com/archives/75
-vec3 uncharted2Tonemap(vec3 x)
-{
-	const float A = 0.15;
-	const float B = 0.50;
-	const float C = 0.10;
-	const float D = 0.20;
-	const float E = 0.02;
-	const float F = 0.30;
-	const float W = 11.2;
-	return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
-}
+// vec3 gammaCorrect(vec3 colour)
+// {
+// 	return pow(colour, vec3(1/2.2, 1/2.2, 1/2.2));
+// }
+//
+// // as explained by http://filmicgames.com/archives/75
+// vec3 uncharted2Tonemap(vec3 x)
+// {
+// 	const float A = 0.15;
+// 	const float B = 0.50;
+// 	const float C = 0.10;
+// 	const float D = 0.20;
+// 	const float E = 0.02;
+// 	const float F = 0.30;
+// 	const float W = 11.2;
+// 	return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
+// }
 
 void main() {
 	vec3 colour = vec3(0, 0, 0);
@@ -80,8 +80,8 @@ void main() {
 		colour += phongColour(pointLights[i]);
 	}
 
-	colour = uncharted2Tonemap(colour);
-	colour = gammaCorrect(colour);
+	// colour = uncharted2Tonemap(colour);
+	// colour = gammaCorrect(colour);
 
 	outFragColour = vec4(colour, 1.0);
 }

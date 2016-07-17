@@ -21,10 +21,12 @@ namespace fw
 		void Render(RenderContext & context);
 
 	private:
-		void bindLights(ShaderProgram & shader, RenderContext & context);
+		void bindWorldSpaceLights(ShaderProgram & shader, RenderContext & context);
+		void bindScreenSpaceLights(ShaderProgram & shader, RenderContext & context);
 		void renderModels(RenderContext & context, ShaderProgram & shader);
 		void initQuad();
 		void renderQuad();
+		void initPostProcessFBO();
 
 		bool isGBufferDebugDisplayMode(DisplayMode mode) const;
 
@@ -34,10 +36,14 @@ namespace fw
 		ShaderProgram lightDebugShader;
 		ShaderProgram lightShader;
 		ShaderProgram stencilShader;
+		ShaderProgram postProcessShader;
 
 		ShaderProgram geometryPassShader;
 
 		GBuffer gBuffer;
 		GLuint quadVAO; // VAO for drawing the quad in the lighting pass
+
+		GLuint postProcessFBO = 0;
+		Texture texPostProcessInput;
 };
 }

@@ -20,7 +20,7 @@ namespace fw
 GameLogic::GameLogic(Game & game)
 	: game(game), humanControlSystem(game.entityManager, game.input)
 {
-	displayMode = DisplayMode::NORMALS;
+	displayMode = DisplayMode::REGULAR;
 }
 
 void GameLogic::Init()
@@ -68,7 +68,7 @@ void GameLogic::Init()
 	// lights
 	ecs::Entity light1 = game.entityManager.NewEntity();
 	auto lightTransform = light1.Assign<Transform>();
-	lightTransform->Translate(1, 2, 1);
+	lightTransform->Translate(1, 25, 1);
 	auto pointLight = light1.Assign<PointLight>();
 	pointLight->intensity = 2;
 
@@ -102,9 +102,11 @@ bool GameLogic::Frame(double dtSinceLastFrame)
 	ImGui::Begin("Properties", &showDebugWindow, ImVec2(100,100), opacity,
 			windowFlags);
 
-		ImGui::Text("Adjust Camera (SPACE + Mouse move)");
-		if (ImGui::Checkbox("Use Normal Maps (N)", &useNormalMaps))
-		{}
+		ImGui::Text("Options)");
+		ImGui::Checkbox("Use Normal Maps (N)", &enableNormalMaps);
+		ImGui::Checkbox("Volumetric Lighting (V)", &enableSSVolumetricLighting);
+		ImGui::Checkbox("Gamma Correct (G)", &enableGammaCorrect);
+		ImGui::Checkbox("HDR (H)", &enableHDR);
 
 		ImGui::Text("Display Mode");
 		ImGui::RadioButton("Regular (1)", (int*)&displayMode, (int)DisplayMode::REGULAR);
@@ -142,11 +144,27 @@ bool GameLogic::Frame(double dtSinceLastFrame)
 
 	if (game.input.IsPressed(GLFW_KEY_N))
 	{
-		useNormalMaps = !useNormalMaps;
+		enableNormalMaps = !enableNormalMaps;
+	}
+	if (game.input.IsPressed(GLFW_KEY_V))
+	{
+		enableSSVolumetricLighting = !enableSSVolumetricLighting;
+	}
+	if (game.input.IsPressed(GLFW_KEY_G))
+	{
+		enableGammaCorrect = !enableGammaCorrect;
+	}
+	if (game.input.IsPressed(GLFW_KEY_H))
+	{
+		enableHDR = !enableHDR;
 	}
 
 	game.graphics.SetDisplayMode(displayMode);
-	game.graphics.ToggleRenderFeature(RenderFeature::NORMAL_MAPS, useNormalMaps);
+	game.graphics.ToggleRenderFeature(RenderFeature::NORMAL_MAPS, enableNormalMaps);
+	game.graphics.ToggleRenderFeature(RenderFeature::SCREEN_SPACE_VOLUMETRIC_LIGHTING,
+		enableSSVolumetricLighting);
+	game.graphics.ToggleRenderFeature(RenderFeature::HDR, enableHDR);
+	game.graphics.ToggleRenderFeature(RenderFeature::GAMMA_CORRECT, enableGammaCorrect);
 
 	return true;
 }
