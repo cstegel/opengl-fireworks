@@ -12,7 +12,7 @@ struct PointLight
 };
 
 #define N_POINT_LIGHTS 1
-const uint N_SAMPLES = 100;
+const uint N_SAMPLES = 200;
 const float density = 1.0f;
 const float decay = 0.8f;
 const float exposure = 1.0f;
@@ -38,7 +38,7 @@ void main()
 		{
 			continue;
 		}
-		
+
 		vec3 lightShaftColour = vec3(0, 0, 0);
 
 		vec2 texCoord = inTexCoord;

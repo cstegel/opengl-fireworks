@@ -58,6 +58,11 @@ vec3 phongColour(PointLight light)
 void main() {
 	vec3 colour = vec3(0, 0, 0);
 
+	if (texture(texPosition, inTexCoord).xyz == vec3(0, 0, 0))
+	{
+		discard;
+	}
+
 	for (int i = 0; i < min(numLights, N_POINT_LIGHTS); ++i)
 	{
 		colour += phongColour(pointLights[i]);

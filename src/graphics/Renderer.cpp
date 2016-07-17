@@ -118,6 +118,7 @@ void Renderer::Render(RenderContext & context)
 	context.CacheProjection();
 	glm::mat4 view = context.CacheView();
 	glm::vec3 viewPos(glm::inverse(view) * glm::vec4(0, 0, 0, 1));
+	glm::vec3 skyColour(153/255.f, 204/255.f, 255/255.f);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -132,8 +133,12 @@ void Renderer::Render(RenderContext & context)
 
 		glDepthMask(GL_TRUE);
 
-		glClearColor(0.0f, 0.0f, 0.4f, 1.0f); // blue sky
+		glClearColor(0, 0, 0, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// colour attachment 2 is albedo spec, clear it to a sky value
+		glm::vec4 skyColourNoSpec(skyColour, 0);
+		glClearBufferfv(GL_COLOR, 2, &skyColourNoSpec[0]);
 
 		renderModels(context, geometryPassShader);
 		context.EndRenderStage(timer);
@@ -168,8 +173,9 @@ void Renderer::Render(RenderContext & context)
 			glUniform1i(shader->getUniformLocation("displayMode"), (int)displayMode);
 		}
 
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		// default the post process input to sky colour
+		glm::vec4 skyColourOpaque(skyColour, 1);
+		glClearBufferfv(GL_COLOR, 0, &skyColourOpaque[0]);
 
 		gBuffer.BindCoreTextures(*shader);
 		if (displayMode == DisplayMode::STENCIL)
@@ -249,6 +255,8 @@ void Renderer::Render(RenderContext & context)
 
 	// switch back to window framebuffer when we do post processing (last step)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClearColor(153/255.f, 204/255.f, 255/255.f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	postProcessShader.enable();
 	{
 		auto timer = context.StartRenderStage(RenderStage::POST_PROCESS);
