@@ -9,6 +9,16 @@
 namespace fw
 {
 
+Transform::Transform(glm::vec3 position)
+{
+	Translate(position);
+}
+
+Transform::Transform(float x, float y, float z)
+{
+	Translate(x, y, z);
+}
+
 glm::mat4 Transform::GetModelTransform()
 {
 	glm::mat4 model;

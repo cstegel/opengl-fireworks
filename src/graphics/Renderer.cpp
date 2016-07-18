@@ -189,12 +189,34 @@ void Renderer::Render(RenderContext & context)
 			viewPos.x, viewPos.y, viewPos.z);
 		}
 
-		if (shouldBindLights)
+		// may need multiple draw calls in order to calculate shading for all lights
+		auto lightEntities = context.entityManager.EntitiesWith<PointLight, Transform>();
+		auto lightIterator = lightEntities.begin();
+		auto lastLightIterator = lightEntities.end();
+
+		while (true)
 		{
-			bindWorldSpaceLights(*shader, context);
+			if (shouldBindLights)
+			{
+				uint i = 0;
+				for (;
+				     i < RenderContext::MAX_SHADER_POINT_LIGHTS && lightIterator != lastLightIterator;
+				     ++i, ++lightIterator)
+				{
+					bindWorldSpaceLight(*lightIterator, i, *shader, context);
+				}
+
+				glUniform1i(shader->getUniformLocation("numLights"), i);
+			}
+
+			renderQuad();
+
+			if (!shouldBindLights || lightIterator == lastLightIterator)
+			{
+				break;
+			}
 		}
 
-		renderQuad();
 		gBuffer.UnbindTextures();
 
 		context.EndRenderStage(timer);
@@ -215,9 +237,33 @@ void Renderer::Render(RenderContext & context)
 			// volumetric lighting needs to sample sky colour so bind albedo texture
 			gBuffer.BindCoreTextures(stencilShader);
 			gBuffer.BindStencilTexture(stencilShader);
-			bindScreenSpaceLights(stencilShader, context, viewPos);
 
-			renderQuad();
+			// may need multiple draw calls in order to calculate
+			// volumetric lighting for all lights
+			auto lightEntities = context.entityManager.EntitiesWith<PointLight, Transform>();
+			auto lightIterator = lightEntities.begin();
+			auto lastLightIterator = lightEntities.end();
+
+			while (true)
+			{
+				uint i = 0;
+				for (;
+				     i < RenderContext::MAX_SHADER_POINT_LIGHTS && lightIterator != lastLightIterator;
+				     ++i, ++lightIterator)
+				{
+					bindScreenSpaceLight(*lightIterator, i, stencilShader, context, viewPos);
+				}
+
+				glUniform1i(shader->getUniformLocation("numLights"), i);
+
+				renderQuad();
+
+				if (lightIterator == lightEntities.end())
+				{
+					break;
+				}
+			}
+
 			glDisable(GL_BLEND);
 
 			context.EndRenderStage(timer);
@@ -352,31 +398,29 @@ void Renderer::renderModels(RenderContext & context, ShaderProgram & shader)
 	}
 }
 
-void Renderer::bindWorldSpaceLights(ShaderProgram & shader, RenderContext & context)
+void Renderer::bindWorldSpaceLight(
+	ecs::Entity lightEnt,
+	uint bindIndex,
+	ShaderProgram & shader,
+	RenderContext & context)
 {
-	uint i = 0;
-	for (ecs::Entity e : context.entityManager.EntitiesWith<PointLight, Transform>())
-	{
-		ecs::Handle<PointLight> light = e.Get<PointLight>();
-		ecs::Handle<Transform> transform = e.Get<Transform>();
+	ecs::Handle<PointLight> light = lightEnt.Get<PointLight>();
+	ecs::Handle<Transform> transform = lightEnt.Get<Transform>();
 
-		glm::vec3 pos = transform->GetPosition();
-		glm::vec3 colour = light->colour;
-		glm::vec2 atten = light->attenuation;
+	glm::vec3 pos = transform->GetPosition();
+	glm::vec3 colour = light->colour;
+	glm::vec2 atten = light->attenuation;
 
-		string var = "pointLights[" + std::to_string(i) + "]";
-		glUniform3f(shader.getUniformLocation(var + ".position"), pos.x, pos.y, pos.z);
-		glUniform3f(shader.getUniformLocation(var + ".colour"), colour.r, colour.g, colour.b);
-		glUniform1f(shader.getUniformLocation(var + ".intensity"), light->intensity);
-		glUniform2f(shader.getUniformLocation(var + ".attenuation"), atten.x, atten.y);
-
-		i++;
-	}
-
-	glUniform1i(shader.getUniformLocation("numLights"), i);
+	string var = "pointLights[" + std::to_string(bindIndex) + "]";
+	glUniform3f(shader.getUniformLocation(var + ".position"), pos.x, pos.y, pos.z);
+	glUniform3f(shader.getUniformLocation(var + ".colour"), colour.r, colour.g, colour.b);
+	glUniform1f(shader.getUniformLocation(var + ".intensity"), light->intensity);
+	glUniform2f(shader.getUniformLocation(var + ".attenuation"), atten.x, atten.y);
 }
 
-void Renderer::bindScreenSpaceLights(
+void Renderer::bindScreenSpaceLight(
+	ecs::Entity lightEnt,
+	uint bindIndex,
 	ShaderProgram & shader,
 	RenderContext & context,
 	const glm::vec3 & viewPos)
@@ -384,37 +428,29 @@ void Renderer::bindScreenSpaceLights(
 	glm::mat4 projView = context.GetCachedProjection() * context.GetCachedView();
 	glm::vec3 viewForward = context.GetViewForward();
 
-	uint i = 0;
-	for (ecs::Entity e : context.entityManager.EntitiesWith<PointLight, Transform>())
-	{
-		ecs::Handle<PointLight> light = e.Get<PointLight>();
-		ecs::Handle<Transform> transform = e.Get<Transform>();
+	ecs::Handle<PointLight> light = lightEnt.Get<PointLight>();
+	ecs::Handle<Transform> transform = lightEnt.Get<Transform>();
 
-		glm::vec4 worldPos = glm::vec4(transform->GetPosition(), 1);
-		glm::vec4 clipSpacePos = projView * worldPos;
-		glm::vec2 ndcSpacePos = glm::vec2(clipSpacePos) / clipSpacePos.w;
-		glm::vec2 uvScreenSpacePos = (ndcSpacePos + glm::vec2(1, 1)) / 2.0f;
-		// glm::vec3 colour = light->colour;
-		// glm::vec2 atten = light->attenuation;
+	glm::vec4 worldPos = glm::vec4(transform->GetPosition(), 1);
+	glm::vec4 clipSpacePos = projView * worldPos;
+	glm::vec2 ndcSpacePos = glm::vec2(clipSpacePos) / clipSpacePos.w;
+	glm::vec2 uvScreenSpacePos = (ndcSpacePos + glm::vec2(1, 1)) / 2.0f;
+	// glm::vec3 colour = light->colour;
+	// glm::vec2 atten = light->attenuation;
 
-		// reduce the volumetric light effect as the screen position goes to infinity
-		float viewAngleReduction = 1.0f / (1.0f + fabs(glm::length(ndcSpacePos)));
+	// reduce the volumetric light effect as the screen position goes to infinity
+	float viewAngleReduction = 1.0f / (1.0f + fabs(glm::length(ndcSpacePos)));
 
-		glm::vec3 viewToLight = glm::vec3(worldPos) - viewPos;
-		bool behindViewer = glm::dot(viewToLight, viewForward) < 0;
+	glm::vec3 viewToLight = glm::vec3(worldPos) - viewPos;
+	bool behindViewer = glm::dot(viewToLight, viewForward) < 0;
 
-		string var = "pointLights[" + std::to_string(i) + "]";
-		glUniform1f(shader.getUniformLocation(var + ".viewAngleReduction"), viewAngleReduction);
-		glUniform2f(shader.getUniformLocation(var + ".position_Screen"), uvScreenSpacePos.x, uvScreenSpacePos.y);
-		glUniform1i(shader.getUniformLocation(var + ".behindViewer"), behindViewer);
-		// glUniform3f(shader.getUniformLocation(var + ".colour"), colour.r, colour.g, colour.b);
-		// glUniform1f(shader.getUniformLocation(var + ".intensity"), light->intensity);
-		// glUniform2f(shader.getUniformLocation(var + ".attenuation"), atten.x, atten.y);
-
-		i++;
-	}
-
-	glUniform1i(shader.getUniformLocation("numLights"), i);
+	string var = "pointLights[" + std::to_string(bindIndex) + "]";
+	glUniform1f(shader.getUniformLocation(var + ".viewAngleReduction"), viewAngleReduction);
+	glUniform2f(shader.getUniformLocation(var + ".position_Screen"), uvScreenSpacePos.x, uvScreenSpacePos.y);
+	glUniform1i(shader.getUniformLocation(var + ".behindViewer"), behindViewer);
+	// glUniform3f(shader.getUniformLocation(var + ".colour"), colour.r, colour.g, colour.b);
+	// glUniform1f(shader.getUniformLocation(var + ".intensity"), light->intensity);
+	// glUniform2f(shader.getUniformLocation(var + ".attenuation"), atten.x, atten.y);
 }
 
 }

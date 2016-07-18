@@ -12,6 +12,9 @@ class Transform
 {
 public:
 	Transform() {}
+	Transform(glm::vec3 position);
+	Transform(float x, float y, float z);
+	
 	void SetRelativeTo(ecs::Entity);
 
 	/**

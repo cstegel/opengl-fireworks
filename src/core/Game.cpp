@@ -1,6 +1,7 @@
 #include "core/Game.hpp"
 
 #include "ecs/components/Controller.hpp"
+#include "ecs/components/Firework.hpp"
 #include "ecs/components/Transform.hpp"
 #include "ecs/components/View.hpp"
 #include "ecs/components/ModelInstance.hpp"
@@ -13,6 +14,7 @@ namespace fw
 	Game::Game() : graphics(*this), audio(*this), logic(*this), physics(*this)
 	{
 		entityManager.RegisterComponentType<HumanController>();
+		entityManager.RegisterComponentType<Firework>();
 		entityManager.RegisterComponentType<ModelInstance>();
 		entityManager.RegisterComponentType<Physics>();
 		entityManager.RegisterComponentType<PointLight>();

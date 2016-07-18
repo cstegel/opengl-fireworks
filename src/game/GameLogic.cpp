@@ -6,6 +6,7 @@
 #include "ecs/components/ModelInstance.hpp"
 #include "ecs/components/View.hpp"
 #include "ecs/components/Physics.hpp"
+#include "ecs/components/Firework.hpp"
 #include "ecs/components/PointLight.hpp"
 
 #include "audio/SoundId.hpp"
@@ -21,7 +22,7 @@ namespace fw
 {
 
 GameLogic::GameLogic(Game & game)
-	: game(game), humanControlSystem(game.entityManager, game.input)
+	: game(game), humanControlSystem(game.entityManager, game.input), fireworks(game)
 {
 	displayMode = DisplayMode::REGULAR;
 }
@@ -87,6 +88,20 @@ void GameLogic::Init()
 	// auto fSpawnerTransform = fSpawner.Assign<Transform>();
 	// fSpawnerTransform->Translate(0, 0, 0);
 
+	// TODO: create fireworks somewhere else
+	ecs::Entity firework = game.entityManager.NewEntity();
+
+	firework.Assign<Transform>(4, 0, 4);
+	firework.Assign<Physics>(glm::vec3(1, 0, 0), glm::vec3(0, 10, 0));
+
+	ecs::Handle<Firework> fireworkComp = firework.Assign<Firework>();
+	fireworkComp->explosionCountdown = 2.0f;
+	fireworkComp->numSplitsOnExplosion = 4;
+	fireworkComp->numExplosionsLeft = 2;
+	fireworkComp->type = Firework::Type::RANDOM;
+
+	ecs::Handle<PointLight> fireworkLight = firework.Assign<PointLight>();
+	fireworkLight->colour = glm::vec3(1, 0, 0);
 
 
 	game.audio.Play(SoundId::DRAGON_ROAR, alduin);
@@ -107,6 +122,7 @@ bool GameLogic::Frame(double dtSinceLastFrame)
 bool GameLogic::appLogic(double dt)
 {
 	if (!humanControlSystem.Frame(dt)) return false;
+	if (!fireworks.Frame(dt)) return false;
 	return true;
 }
 

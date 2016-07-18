@@ -2,6 +2,7 @@
 
 #include "Common.hpp"
 #include "game/HumanControlSystem.hpp"
+#include "game/FireworkManager.hpp"
 #include "graphics/DisplayMode.hpp"
 
 namespace fw
@@ -16,13 +17,14 @@ namespace fw
 
 		void Init();
 		bool Frame(double dtSinceLastFrame);
-		
+
 	private:
 		bool appLogic(double dt);
 		bool guiLogic(double dt);
 
 		Game & game;
 		HumanControlSystem humanControlSystem;
+		FireworkManager fireworks;
 
 		ecs::Entity player;
 

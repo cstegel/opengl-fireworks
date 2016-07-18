@@ -10,45 +10,55 @@
 
 namespace fw
 {
-	class RenderContext;
-	class GraphicsManager;
 
-	class Renderer
-	{
-	public:
-		Renderer(GraphicsManager & graphicsManager);
-		~Renderer();
+class RenderContext;
+class GraphicsManager;
 
-		void Render(RenderContext & context);
+class Renderer
+{
+public:
+	Renderer(GraphicsManager & graphicsManager);
+	~Renderer();
 
-	private:
-		void bindWorldSpaceLights(ShaderProgram & shader, RenderContext & context);
-		void bindScreenSpaceLights(
-			ShaderProgram & shader,
-			RenderContext & context,
-			const glm::vec3 & viewPos);
+	void Render(RenderContext & context);
 
-		void renderModels(RenderContext & context, ShaderProgram & shader);
-		void initQuad();
-		void renderQuad();
-		void initPostProcessFBO();
+private:
+	// binds a point light to a shader at the given index
+	void bindWorldSpaceLight(
+		ecs::Entity lightEnt,
+		uint bindIndex,
+		ShaderProgram & shader,
+		RenderContext & context);
 
-		bool isGBufferDebugDisplayMode(DisplayMode mode) const;
+	void bindScreenSpaceLight(
+		ecs::Entity lightEnt,
+		uint bindIndex,
+		ShaderProgram & shader,
+		RenderContext & context,
+		const glm::vec3 & viewPos);
 
-		GraphicsManager &graphics;
-		ShaderProgram shadingPassShader;
-		ShaderProgram gBufferDebugShader;
-		ShaderProgram lightDebugShader;
-		ShaderProgram lightShader;
-		ShaderProgram stencilShader;
-		ShaderProgram postProcessShader;
+	void renderModels(RenderContext & context, ShaderProgram & shader);
+	void initQuad();
+	void renderQuad();
+	void initPostProcessFBO();
 
-		ShaderProgram geometryPassShader;
+	bool isGBufferDebugDisplayMode(DisplayMode mode) const;
 
-		GBuffer gBuffer;
-		GLuint quadVAO; // VAO for drawing the quad in the lighting pass
+	GraphicsManager &graphics;
+	ShaderProgram shadingPassShader;
+	ShaderProgram gBufferDebugShader;
+	ShaderProgram lightDebugShader;
+	ShaderProgram lightShader;
+	ShaderProgram stencilShader;
+	ShaderProgram postProcessShader;
 
-		GLuint postProcessFBO = 0;
-		Texture texPostProcessInput;
+	ShaderProgram geometryPassShader;
+
+	GBuffer gBuffer;
+	GLuint quadVAO; // VAO for drawing the quad in the lighting pass
+
+	GLuint postProcessFBO = 0;
+	Texture texPostProcessInput;
 };
+
 }
