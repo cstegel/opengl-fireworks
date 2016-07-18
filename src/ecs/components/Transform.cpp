@@ -36,7 +36,7 @@ glm::mat4 Transform::GetModelTransform()
 	return model * this->translate * GetRotateMatrix() * this->scale;
 }
 
-glm::vec3 Transform::GetForwardVec(const glm::vec3 & worldForward)
+glm::vec3 Transform::GetForward(const glm::vec3 & worldForward)
 {
 	glm::mat4 normalMatWorldToModel((GetModelTransform()));
 	return glm::normalize(glm::vec3(normalMatWorldToModel * glm::vec4(worldForward, 0)));

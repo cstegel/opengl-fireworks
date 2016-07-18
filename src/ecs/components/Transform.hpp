@@ -14,7 +14,7 @@ public:
 	Transform() {}
 	Transform(glm::vec3 position);
 	Transform(float x, float y, float z);
-	
+
 	void SetRelativeTo(ecs::Entity);
 
 	/**
@@ -29,7 +29,7 @@ public:
 	 * This will be computed by obtaining the model transform so it may be slow
 	 * for hierarchical entities.
 	 */
-	glm::vec3 GetForwardVec(const glm::vec3 & worldForward);
+	glm::vec3 GetForward(const glm::vec3 & worldForward);
 
 	glm::vec3 GetPosition();
 

@@ -182,7 +182,7 @@ const glm::vec3 RenderContext::GetViewForward() const
 	ecs::Entity playerView = GetPlayerView();
 	ecs::Handle<Transform> viewTransform = playerView.Get<Transform>();
 
-	return viewTransform->GetForwardVec(game.GetWorldForward());
+	return viewTransform->GetForward(game.GetWorldForward());
 }
 
 RenderStage RenderContext::GetRenderStage() const

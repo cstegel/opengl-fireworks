@@ -89,19 +89,7 @@ void GameLogic::Init()
 	// fSpawnerTransform->Translate(0, 0, 0);
 
 	// TODO: create fireworks somewhere else
-	ecs::Entity firework = game.entityManager.NewEntity();
-
-	firework.Assign<Transform>(4, 0, 4);
-	firework.Assign<Physics>(glm::vec3(1, 0, 0), glm::vec3(0, 10, 0));
-
-	ecs::Handle<Firework> fireworkComp = firework.Assign<Firework>();
-	fireworkComp->explosionCountdown = 2.0f;
-	fireworkComp->numSplitsOnExplosion = 4;
-	fireworkComp->numExplosionsLeft = 2;
-	fireworkComp->type = Firework::Type::RANDOM;
-
-	ecs::Handle<PointLight> fireworkLight = firework.Assign<PointLight>();
-	fireworkLight->colour = glm::vec3(1, 0, 0);
+	createFireworkInFrontOfPlayer();
 
 
 	game.audio.Play(SoundId::DRAGON_ROAR, alduin);
@@ -109,6 +97,34 @@ void GameLogic::Init()
 
 GameLogic::~GameLogic()
 {
+}
+
+void GameLogic::createFireworkInFrontOfPlayer()
+{
+	const float FIREWORK_SPAWN_DIST = 10.0f;
+
+	ecs::Handle<Transform> playerTransform = player.Get<Transform>();
+	glm::vec3 playerPos = playerTransform->GetPosition();
+	glm::vec3 playerPosXZ(playerPos.x, 0, playerPos.z);
+
+	glm::vec3 playerForward = playerTransform->GetForward(game.GetWorldForward());
+	glm::vec3 playerForwardXZ = glm::normalize(glm::vec3(playerForward.x, 0, playerForward.z));
+
+	glm::vec3 fireworkPos = playerPosXZ + FIREWORK_SPAWN_DIST*playerForwardXZ;
+
+	ecs::Entity firework = game.entityManager.NewEntity();
+
+	firework.Assign<Transform>(fireworkPos);
+	firework.Assign<Physics>(glm::vec3(1, 0, 0), glm::vec3(0, 20, 0));
+
+	ecs::Handle<Firework> fireworkComp = firework.Assign<Firework>();
+	fireworkComp->explosionCountdown = 2.0f;
+	fireworkComp->numSplitsOnExplosion = 4;
+	fireworkComp->numExplosionsLeft = 0;
+	fireworkComp->type = Firework::Type::RANDOM;
+
+	ecs::Handle<PointLight> fireworkLight = firework.Assign<PointLight>();
+	fireworkLight->colour = glm::vec3(1, 0, 0);
 }
 
 bool GameLogic::Frame(double dtSinceLastFrame)
@@ -235,6 +251,12 @@ bool GameLogic::guiLogic(double dt)
 		enableSSVolumetricLighting);
 	game.graphics.ToggleRenderFeature(RenderFeature::HDR, enableHDR);
 	game.graphics.ToggleRenderFeature(RenderFeature::GAMMA_CORRECT, enableGammaCorrect);
+
+
+	if (game.input.IsPressed(MouseButtonToKey(GLFW_MOUSE_BUTTON_LEFT)))
+	{
+		createFireworkInFrontOfPlayer();
+	}
 
 	return true;
 }

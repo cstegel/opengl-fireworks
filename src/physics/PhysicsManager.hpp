@@ -15,9 +15,9 @@ public:
 
 	bool Frame(double dtSinceLastFrame);
 
+	static const float GRAVITY;
 private:
 	Game & game;
-	static const float GRAVITY;
 };
 
 }

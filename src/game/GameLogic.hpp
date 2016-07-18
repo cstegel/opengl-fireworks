@@ -22,6 +22,8 @@ namespace fw
 		bool appLogic(double dt);
 		bool guiLogic(double dt);
 
+		void createFireworkInFrontOfPlayer();
+
 		Game & game;
 		HumanControlSystem humanControlSystem;
 		FireworkManager fireworks;

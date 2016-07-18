@@ -51,7 +51,7 @@ bool AudioManager::Frame()
 	ecs::Handle<Transform> transform = player.Get<Transform>();
 
 	glm::vec3 position = transform->GetPosition();
-	glm::vec3 forward = transform->GetForwardVec(game.GetWorldForward());
+	glm::vec3 forward = transform->GetForward(game.GetWorldForward());
 
 	glm::vec3 up = game.GetWorldUp();
 
