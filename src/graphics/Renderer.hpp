@@ -4,6 +4,7 @@
 #include "graphics/DisplayMode.hpp"
 #include "graphics/RenderFeature.hpp"
 #include "graphics/GBuffer.hpp"
+#include "graphics/RenderContext.hpp"
 
 #include <Ecs.hh>
 #include <glm/glm.hpp>
@@ -23,6 +24,17 @@ public:
 	void Render(RenderContext & context);
 
 private:
+
+	struct ShadowMap
+	{
+		GLuint FBO;
+		GLuint texDepth;
+		glm::mat4 worldToLightMat;
+	};
+
+	static const uint SHADOW_WIDTH = 800;
+	static const uint SHADOW_HEIGHT = 800;
+
 	// binds a point light to a shader at the given index
 	void bindWorldSpaceLight(
 		ecs::Entity lightEnt,
@@ -43,6 +55,9 @@ private:
 	void initPostProcessFBO();
 	void initLightModelPassFBO();
 	void initTempMixFBO();
+	void initShadowMaps();
+
+	void generateShadowMap(ecs::Entity lightEnt, uint bindIndex, RenderContext & context, GLuint rebindFBO);
 
 	/**
 	 * terribly programmed function for adding together the gBuffer outline texture and
@@ -61,6 +76,8 @@ private:
 	ShaderProgram postProcessShader;
 	ShaderProgram copyTextureShader;
 	ShaderProgram nullShader;
+	ShaderProgram shadowMapShader;
+	ShaderProgram shadowMapDebugShader;
 
 	ShaderProgram geometryPassShader;
 
@@ -76,6 +93,8 @@ private:
 
 	GLuint tempMixFBO = 0;
 	Texture texTempMixColour;
+
+	array<ShadowMap, RenderContext::MAX_SHADER_POINT_LIGHTS> shadowMaps;
 };
 
 }

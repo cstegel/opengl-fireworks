@@ -30,15 +30,15 @@ void Mesh::Render(
 	glm::mat4 mvp = context.GetCachedProjection() * context.GetCachedView() * transform;
 
 	glUniformMatrix4fv(
-	shader.getUniformLocation("mvpMat"),
-	1, GL_FALSE, glm::value_ptr(mvp)
+		shader.getUniformLocation("mvpMat", true),
+		1, GL_FALSE, glm::value_ptr(mvp)
 	);
 
 	if (context.GetRenderStage() != RenderStage::LIGHT_MODELS)
 	{
 		// transpose it as it is loaded
 		glUniformMatrix3fv(
-		shader.getUniformLocation("normalMat"),
+		shader.getUniformLocation("normalMat", true),
 		1, GL_TRUE, glm::value_ptr(transposeNormalMatrix)
 		);
 
@@ -48,7 +48,7 @@ void Mesh::Render(
 		);
 
 		glUniform1f(
-		shader.getUniformLocation("shininess"),
+		shader.getUniformLocation("shininess", true),
 		shininess
 		);
 	}

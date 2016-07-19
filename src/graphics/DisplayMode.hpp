@@ -14,6 +14,7 @@ enum class DisplayMode
 	STENCIL = 6,
 	BRIGHTNESS = 7,
 	VOLUMETRIC_LIGHTING = 8,
+	SHADOW_MAP_DEPTH = 9,
 };
 
 }

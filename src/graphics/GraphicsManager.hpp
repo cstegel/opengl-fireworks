@@ -55,13 +55,13 @@ namespace fw
 
 		double GetRenderStageAvgTime(RenderStage stage) const;
 
+		Game & game;
 	private:
 		static const string LIGHT_MODEL;
 
 		void throwIfNotValidContext() const;
 		void loadModels();
 
-		Game & game;
 		shared_ptr<RenderContext> renderContext;
 		shared_ptr<Renderer> renderer;
 		unordered_map<string, Model> models;

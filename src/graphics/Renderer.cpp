@@ -5,6 +5,7 @@
 #include "core/AssetManager.hpp"
 #include "graphics/GraphicsManager.hpp"
 #include "graphics/RenderStage.hpp"
+#include "core/Game.hpp"
 
 #include "ecs/components/View.hpp"
 #include "ecs/components/Transform.hpp"
@@ -87,15 +88,56 @@ Renderer::Renderer(GraphicsManager &graphics)
 		GraphicsManager::GetShaderPath("Null.frag").c_str() );
 	nullShader.link();
 
+	shadowMapShader.generateProgramObject();
+	shadowMapShader.attachVertexShader(
+		GraphicsManager::GetShaderPath("ShadowMap.vert").c_str() );
+	shadowMapShader.attachFragmentShader(
+		GraphicsManager::GetShaderPath("ShadowMap.frag").c_str() );
+	shadowMapShader.link();
+
+	shadowMapDebugShader.generateProgramObject();
+	shadowMapDebugShader.attachVertexShader(
+		GraphicsManager::GetShaderPath("ShadingPass.vert").c_str() );
+	shadowMapDebugShader.attachFragmentShader(
+		GraphicsManager::GetShaderPath("ShadowMapDebug.frag").c_str() );
+	shadowMapDebugShader.link();
+
 	initPostProcessFBO();
 	initLightModelPassFBO();
 	initTempMixFBO();
+	initShadowMaps();
 
 	initQuad();
 }
 
 Renderer::~Renderer()
 {}
+
+void Renderer::initShadowMaps()
+{
+	for (Renderer::ShadowMap & shadowMap : shadowMaps)
+	{
+		glGenFramebuffers(1, &shadowMap.FBO);
+		glGenTextures(1, &shadowMap.texDepth);
+		glBindTexture(GL_TEXTURE_2D, shadowMap.texDepth);
+		glTexImage2D(
+			GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+			Renderer::SHADOW_WIDTH, Renderer::SHADOW_HEIGHT, 0,
+			GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		// bind texture as depth buff, explicitly say there's no colour attachments (necessary)
+		glBindFramebuffer(GL_FRAMEBUFFER, shadowMap.FBO);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMap.texDepth, 0);
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+}
 
 // should clean this up by splitting into a class
 void Renderer::initPostProcessFBO()
@@ -261,6 +303,11 @@ void Renderer::Render(RenderContext & context)
 		shouldBindLights = false;
 		shouldBindViewPos = false;
 	}
+	else if (displayMode == DisplayMode::SHADOW_MAP_DEPTH)
+	{
+		shader = &shadowMapDebugShader;
+		shouldBindViewPos = false;
+	}
 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, postProcessFBO);
@@ -305,6 +352,7 @@ void Renderer::Render(RenderContext & context)
 				     i < RenderContext::MAX_SHADER_POINT_LIGHTS && lightIterator != lastLightIterator;
 				     ++i, ++lightIterator)
 				{
+					generateShadowMap(*lightIterator, i, context, postProcessFBO);
 					bindWorldSpaceLight(*lightIterator, i, *shader, context);
 				}
 
@@ -586,9 +634,42 @@ void Renderer::renderModels(RenderContext & context, ShaderProgram & shader)
 	}
 }
 
+void Renderer::generateShadowMap(ecs::Entity lightEnt, uint bindIndex, RenderContext & context, GLuint rebindFBO)
+{
+	ShadowMap & shadowMap = shadowMaps.at(bindIndex);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, shadowMap.FBO);
+	// float infDepth = 1.0f;
+	// glClearNamedFramebufferfv(shadowMap.FBO, GL_DEPTH, 0, &infDepth);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, Renderer::SHADOW_WIDTH, Renderer::SHADOW_HEIGHT);
+	shadowMapShader.enable();
+	{
+		glm::vec3 worldUp = graphics.game.GetWorldUp();
+		glm::mat4 worldToLight = glm::inverse(lightEnt.Get<Transform>()->GetModelTransform());
+		glm::mat4 lookDown = glm::lookAt(glm::vec3(0, 0, 0), -worldUp, worldUp);
+		glm::mat4 lightPerspective = glm::perspective(
+			glm::radians(45.0f), 1.0f, 0.1f, 1000.f
+		);
+
+		shadowMap.worldToLightMat = lightPerspective * lookDown * worldToLight;
+
+		glUniformMatrix4fv(
+		shadowMapShader.getUniformLocation("worldToLightMat"), 1, GL_FALSE,
+			glm::value_ptr(shadowMap.worldToLightMat));
+
+		renderModels(context, shadowMapShader);
+	}
+	shadowMapShader.disable();
+
+	// reset glViewport
+	glViewport(0, 0, context.GetWindowWidth(), context.GetWindowHeight());
+	glBindFramebuffer(GL_FRAMEBUFFER, rebindFBO);
+}
+
 void Renderer::bindWorldSpaceLight(
 	ecs::Entity lightEnt,
-	uint bindIndex,
+	uint lightIndex,
 	ShaderProgram & shader,
 	RenderContext & context)
 {
@@ -599,11 +680,24 @@ void Renderer::bindWorldSpaceLight(
 	glm::vec3 colour = light->colour;
 	glm::vec2 atten = light->attenuation;
 
-	string var = "pointLights[" + std::to_string(bindIndex) + "]";
+	ShadowMap & shadowMap = shadowMaps.at(lightIndex);
+
+
+	string var = "pointLights[" + std::to_string(lightIndex) + "]";
 	glUniform3f(shader.getUniformLocation(var + ".position"), pos.x, pos.y, pos.z);
 	glUniform3f(shader.getUniformLocation(var + ".colour"), colour.r, colour.g, colour.b);
 	glUniform1f(shader.getUniformLocation(var + ".intensity"), light->intensity);
 	glUniform2f(shader.getUniformLocation(var + ".attenuation"), atten.x, atten.y);
+	glUniformMatrix4fv(shader.getUniformLocation(var + ".worldToLightMat", true),
+		1, GL_FALSE, glm::value_ptr(shadowMap.worldToLightMat));
+
+	// start at 3 because other gBuffer textures bind 0 - 2
+	glActiveTexture(GL_TEXTURE3 + lightIndex);
+	glBindTexture(GL_TEXTURE_2D, shadowMap.texDepth);
+	glUniform1i(
+		shader.getUniformLocation(var + ".texShadowDepth", true),
+		3 + lightIndex
+	);
 }
 
 void Renderer::bindScreenSpaceLight(
