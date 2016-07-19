@@ -204,8 +204,8 @@ void Renderer::Render(RenderContext & context)
 	context.CacheProjection();
 	glm::mat4 view = context.CacheView();
 	glm::vec3 viewPos(glm::inverse(view) * glm::vec4(0, 0, 0, 1));
-	glm::vec3 skyColour(0, 0, 0);
-	// glm::vec3 skyColour(153/255.f, 204/255.f, 255/255.f);
+	// glm::vec3 skyColour(0, 0, 0);
+	glm::vec3 skyColour(30/255.f, 30/255.f, 30/255.f);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -226,10 +226,6 @@ void Renderer::Render(RenderContext & context)
 		// default the stencil texture to sky colour since it will be used for volumetric lighting
 		glm::vec4 skyColourOpaque(skyColour, 1);
 		glClearBufferfv(GL_COLOR, 3, &skyColourOpaque[0]);
-
-		// colour attachment 2 is albedo spec, clear it to a sky value
-		glm::vec4 skyColourNoSpec(skyColour, 0);
-		glClearBufferfv(GL_COLOR, 2, &skyColourNoSpec[0]);
 
 		renderModels(context, geometryPassShader);
 		context.EndRenderStage(timer);
@@ -254,7 +250,7 @@ void Renderer::Render(RenderContext & context)
 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, postProcessFBO);
-	glClearColor(0, 0, 0, 0);
+	glClearColor(skyColour.r, skyColour.g, skyColour.b, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
 	shader->enable();
 	{
@@ -284,11 +280,8 @@ void Renderer::Render(RenderContext & context)
 		auto lightIterator = lightEntities.begin();
 		auto lastLightIterator = lightEntities.end();
 
-		// add up all the lighting from multiple lighting passes
-		glEnablei(GL_BLEND, 0);
-		glBlendEquationSeparate(GL_FUNC_ADD, GL_MAX);
-		glBlendFuncSeparate(1.0, 1.0, 1.0, 1.0);
-
+		// first render pass, overwrite the sky
+		glDisable(GL_BLEND);
 		while (true)
 		{
 			if (shouldBindLights)
@@ -310,6 +303,11 @@ void Renderer::Render(RenderContext & context)
 			{
 				break;
 			}
+
+			// if there's more lights to do another pass, blend the result in
+			glEnablei(GL_BLEND, 0);
+			glBlendEquationSeparate(GL_FUNC_ADD, GL_MAX);
+			glBlendFuncSeparate(1.0, 1.0, 1.0, 1.0);
 		}
 
 		glDisable(GL_BLEND);
@@ -468,7 +466,6 @@ void Renderer::Render(RenderContext & context)
 
 			glDisable(GL_BLEND);
 		}
-
 	}
 
 	// switch back to window framebuffer when we do post processing (last step)
@@ -490,6 +487,7 @@ void Renderer::Render(RenderContext & context)
 
 		texPostProcessInput.Bind(postProcessShader, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClearColor(0,0,0,0);
 		renderQuad();
 
 		context.EndRenderStage(timer);
