@@ -14,6 +14,7 @@ class Texture {
 public:
 	enum class Type
 	{
+		UNKNOWN = 0,
 		NORMAL,
 		POSITION,
 		ALBEDO,

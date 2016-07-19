@@ -18,8 +18,7 @@ const float decay = 0.8f;
 const float exposure = 1.0f;
 const float weight = 1.0f;
 
-layout (binding = 2) uniform sampler2D texAlbedoSpecular;
-layout (binding = 3) uniform usampler2D texStencil;
+layout (binding = 0) uniform sampler2D texColour;
 uniform PointLight[N_POINT_LIGHTS] pointLights;
 uniform int numLights;
 
@@ -49,10 +48,7 @@ void main()
 
 		for (int j = 0; j < N_SAMPLES; j++)
 		{
-			// stencil is stored where 1 == occluder and 0 == free so we invert this
-			uint stencilBit = texture(texStencil, texCoord).r;
-			uint invStencilBit = 1 ^ stencilBit; // only flip the first bit
-			vec3 colour = invStencilBit * texture(texAlbedoSpecular, texCoord).rgb;
+			vec3 colour = texture(texColour, texCoord).rgb;
 
 			lightShaftColour += weight * illumDecay * colour;
 

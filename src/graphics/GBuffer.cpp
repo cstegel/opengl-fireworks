@@ -49,9 +49,9 @@ GBuffer::GBuffer(uint screenWidth, uint screenHeight)
 		Texture::Type::STENCIL,
 		screenWidth,
 		screenHeight,
-		GL_RGB32UI,
-		GL_RGB_INTEGER,
-		GL_UNSIGNED_INT,
+		GL_RGBA16F,
+		GL_RGBA,
+		GL_FLOAT,
 		NULL);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, texStencil.id, 0);
 

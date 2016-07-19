@@ -254,9 +254,13 @@ bool GameLogic::guiLogic(double dt)
 	game.graphics.ToggleRenderFeature(RenderFeature::GAMMA_CORRECT, enableGammaCorrect);
 
 
-	if (game.input.IsPressed(MouseButtonToKey(GLFW_MOUSE_BUTTON_LEFT)))
+	// game controls
+	if (!game.input.FocusLocked())
 	{
-		createFireworkInFrontOfPlayer();
+		if (game.input.IsPressed(MouseButtonToKey(GLFW_MOUSE_BUTTON_LEFT)))
+		{
+			createFireworkInFrontOfPlayer();
+		}
 	}
 
 	return true;

@@ -23,13 +23,13 @@ public:
 
 	GLuint FBO; // frame buffer object
 
-private:
 	Texture texPosition;
 	Texture texNormalShininess;
 	Texture texAlbedoSpec;
 	GLuint depthBuff;
 	Texture texStencil;
 
+private:
 	uint screenWidth;
 	uint screenHeight;
 };

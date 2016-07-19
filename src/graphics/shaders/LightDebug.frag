@@ -11,6 +11,7 @@ struct PointLight
 
 #define N_POINT_LIGHTS 16
 uniform PointLight[N_POINT_LIGHTS] pointLights;
+uniform int numLights;
 
 layout (binding = 0) uniform sampler2D texPosition;
 layout (binding = 1) uniform sampler2D texNormal;
@@ -27,7 +28,7 @@ void main()
 {
 	float brightness = 0.0f;
 
-	for (int i = 0; i < N_POINT_LIGHTS; i++)
+	for (int i = 0; i < min(numLights, N_POINT_LIGHTS); i++)
 	{
 		PointLight light = pointLights[i];
 		vec3 fragPos_World = texture(texPosition, inTexCoord).xyz;

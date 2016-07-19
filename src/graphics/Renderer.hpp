@@ -41,6 +41,8 @@ private:
 	void initQuad();
 	void renderQuad();
 	void initPostProcessFBO();
+	void initLightModelPassFBO();
+	void initTempMixFBO();
 
 	bool isGBufferDebugDisplayMode(DisplayMode mode) const;
 
@@ -51,14 +53,22 @@ private:
 	ShaderProgram lightShader;
 	ShaderProgram stencilShader;
 	ShaderProgram postProcessShader;
+	ShaderProgram copyTextureShader;
 
 	ShaderProgram geometryPassShader;
 
 	GBuffer gBuffer;
 	GLuint quadVAO; // VAO for drawing the quad in the lighting pass
 
+	// used for rendering various passes to different textures
 	GLuint postProcessFBO = 0;
 	Texture texPostProcessInput;
+
+	GLuint lightModelPassFBO = 0;
+	Texture texLightModelColour;
+
+	GLuint tempMixFBO = 0;
+	Texture texTempMixColour;
 };
 
 }
