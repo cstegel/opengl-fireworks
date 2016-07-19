@@ -8,7 +8,7 @@
 namespace fw
 {
 
-const string GraphicsManager::LIGHT_MODEL = "ico_sphere";
+const string GraphicsManager::LIGHT_MODEL = "sphere";
 
 GraphicsManager::GraphicsManager(Game & game) : game(game)
 {

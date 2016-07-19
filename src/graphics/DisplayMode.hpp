@@ -13,6 +13,7 @@ enum class DisplayMode
 	POSITION = 5,
 	STENCIL = 6,
 	BRIGHTNESS = 7,
+	VOLUMETRIC_LIGHTING = 8,
 };
 
 }

@@ -14,7 +14,7 @@ struct PointLight
 #define N_POINT_LIGHTS 16
 const uint N_SAMPLES = 200;
 const float density = 1.0f;
-const float decay = 0.8f;
+const float decay = 0.975f;
 const float exposure = 1.0f;
 const float weight = 1.0f;
 
@@ -44,7 +44,7 @@ void main()
 		float illumDecay = 1.0f;
 
 		vec2 dTexCoord = light.position_Screen - inTexCoord;
-		dTexCoord /= N_SAMPLES * density;
+		dTexCoord /= float(N_SAMPLES) * density;
 
 		for (int j = 0; j < N_SAMPLES; j++)
 		{

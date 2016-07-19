@@ -80,6 +80,13 @@ Renderer::Renderer(GraphicsManager &graphics)
 		GraphicsManager::GetShaderPath("ShadingPass.frag").c_str() );
 	shadingPassShader.link();
 
+	nullShader.generateProgramObject();
+	nullShader.attachVertexShader(
+		GraphicsManager::GetShaderPath("ShadingPass.vert").c_str() );
+	nullShader.attachFragmentShader(
+		GraphicsManager::GetShaderPath("Null.frag").c_str() );
+	nullShader.link();
+
 	initPostProcessFBO();
 	initLightModelPassFBO();
 	initTempMixFBO();
@@ -204,8 +211,8 @@ void Renderer::Render(RenderContext & context)
 	context.CacheProjection();
 	glm::mat4 view = context.CacheView();
 	glm::vec3 viewPos(glm::inverse(view) * glm::vec4(0, 0, 0, 1));
-	// glm::vec3 skyColour(0, 0, 0);
-	glm::vec3 skyColour(30/255.f, 30/255.f, 30/255.f);
+	glm::vec3 skyColour(0, 0, 0);
+	// glm::vec3 skyColour(30/255.f, 30/255.f, 30/255.f);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -246,6 +253,13 @@ void Renderer::Render(RenderContext & context)
 	else if (displayMode == DisplayMode::BRIGHTNESS)
 	{
 		shader = &lightDebugShader;
+	}
+	else if (displayMode == DisplayMode::VOLUMETRIC_LIGHTING)
+	{
+		// don't do any normal shading
+		shader = &nullShader;
+		shouldBindLights = false;
+		shouldBindViewPos = false;
 	}
 
 
@@ -343,7 +357,7 @@ void Renderer::Render(RenderContext & context)
 			Transform transform = *e.Get<Transform>();
 
 			// light size depends asymptotically on its intensity
-			transform.Scale(2.0f - std::min(1.95f, 2.0f/(1.f + 0.05f*pointLight->intensity)));
+			transform.Scale(pointLight->GetRadius());
 
 			glUniform3fv(
 			lightShader.getUniformLocation("lightColour"),
@@ -359,38 +373,12 @@ void Renderer::Render(RenderContext & context)
 	lightShader.disable();
 
 
-	if (displayMode == DisplayMode::REGULAR)
+	if (displayMode == DisplayMode::REGULAR || displayMode == DisplayMode::VOLUMETRIC_LIGHTING)
 	{
 		if (context.IsRenderFeatureEnabled(RenderFeature::SCREEN_SPACE_VOLUMETRIC_LIGHTING))
 		{
 			// must mix together the object outlines from the gbuffer with the light models
-			glBindFramebuffer(GL_FRAMEBUFFER, tempMixFBO);
-			glClearColor(0, 0, 0, 0);
-			glClear(GL_COLOR_BUFFER_BIT);
-
-			// light models were already rendered with depth info so we can just add the two
-			// colour textures together (object outlines + light models)
-			glEnablei(GL_BLEND, 0);
-			glBlendEquationSeparate(GL_FUNC_ADD, GL_MAX);
-			glBlendFuncSeparate(1.0, 1.0, 1.0, 1.0);
-
-			copyTextureShader.enable();
-			{
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, gBuffer.texStencil.id);
-				glUniform1i(copyTextureShader.getUniformLocation("texToCopy"), 0);
-
-				renderQuad();
-
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, texLightModelColour.id);
-				glUniform1i(copyTextureShader.getUniformLocation("texToCopy"), 0);
-
-				renderQuad();
-			}
-			copyTextureShader.disable();
-
-			glDisable(GL_BLEND);
+			mixOutlineWithLightModelsToTempTexture();
 
 			// add the volumetric lighting colour to the post process FBO which
 			// already has the shading output
@@ -498,6 +486,37 @@ void Renderer::Render(RenderContext & context)
 	ImGui::Render();
 
 	glfwSwapBuffers(context.GetWindow());
+}
+
+void Renderer::mixOutlineWithLightModelsToTempTexture()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, tempMixFBO);
+	glClearColor(0, 0, 0, 0);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	// light models were already rendered with depth info so we can just add the two
+	// colour textures together (object outlines + light models)
+	glEnablei(GL_BLEND, 0);
+	glBlendEquationSeparate(GL_FUNC_ADD, GL_MAX);
+	glBlendFuncSeparate(1.0, 1.0, 1.0, 1.0);
+
+	copyTextureShader.enable();
+	{
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, gBuffer.texStencil.id);
+		glUniform1i(copyTextureShader.getUniformLocation("texToCopy"), 0);
+
+		renderQuad();
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texLightModelColour.id);
+		glUniform1i(copyTextureShader.getUniformLocation("texToCopy"), 0);
+
+		renderQuad();
+	}
+	copyTextureShader.disable();
+
+	glDisable(GL_BLEND);
 }
 
 bool Renderer::isGBufferDebugDisplayMode(DisplayMode mode) const
@@ -613,6 +632,7 @@ void Renderer::bindScreenSpaceLight(
 	glm::vec3 viewToLight = glm::vec3(worldPos) - viewPos;
 	bool behindViewer = glm::dot(viewToLight, viewForward) < 0;
 
+
 	string var = "pointLights[" + std::to_string(bindIndex) + "]";
 	glUniform1f(shader.getUniformLocation(var + ".viewAngleReduction"), viewAngleReduction);
 	glUniform2f(shader.getUniformLocation(var + ".position_Screen"), uvScreenSpacePos.x, uvScreenSpacePos.y);
@@ -620,6 +640,7 @@ void Renderer::bindScreenSpaceLight(
 	// glUniform3f(shader.getUniformLocation(var + ".colour"), colour.r, colour.g, colour.b);
 	// glUniform1f(shader.getUniformLocation(var + ".intensity"), light->intensity);
 	// glUniform2f(shader.getUniformLocation(var + ".attenuation"), atten.x, atten.y);
+
 }
 
 }

@@ -44,6 +44,12 @@ private:
 	void initLightModelPassFBO();
 	void initTempMixFBO();
 
+	/**
+	 * terribly programmed function for adding together the gBuffer outline texture and
+	 * the light models texture.  They will end up in "texTempMixColour"
+	 */
+	void mixOutlineWithLightModelsToTempTexture();
+
 	bool isGBufferDebugDisplayMode(DisplayMode mode) const;
 
 	GraphicsManager &graphics;
@@ -54,6 +60,7 @@ private:
 	ShaderProgram stencilShader;
 	ShaderProgram postProcessShader;
 	ShaderProgram copyTextureShader;
+	ShaderProgram nullShader;
 
 	ShaderProgram geometryPassShader;
 

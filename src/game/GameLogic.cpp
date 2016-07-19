@@ -203,6 +203,7 @@ bool GameLogic::guiLogic(double dt)
 			ImGui::RadioButton("Position (6)", (int*)&displayMode, (int)DisplayMode::POSITION);
 			ImGui::RadioButton("Stencil (7)", (int*)&displayMode, (int)DisplayMode::STENCIL);
 			ImGui::RadioButton("Brightness (8)", (int*)&displayMode, (int)DisplayMode::BRIGHTNESS);
+			ImGui::RadioButton("Volumetric Lighting (9)", (int*)&displayMode, (int)DisplayMode::VOLUMETRIC_LIGHTING);
 		}
 
 		// Create Button, and check if it was clicked:
@@ -228,6 +229,7 @@ bool GameLogic::guiLogic(double dt)
 	else if (game.input.IsPressed(GLFW_KEY_6)) displayMode = DisplayMode::POSITION;
 	else if (game.input.IsPressed(GLFW_KEY_7)) displayMode = DisplayMode::STENCIL;
 	else if (game.input.IsPressed(GLFW_KEY_8)) displayMode = DisplayMode::BRIGHTNESS;
+	else if (game.input.IsPressed(GLFW_KEY_9)) displayMode = DisplayMode::VOLUMETRIC_LIGHTING;
 
 	if (game.input.IsPressed(GLFW_KEY_N))
 	{
