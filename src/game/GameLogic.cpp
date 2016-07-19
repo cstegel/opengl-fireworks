@@ -26,6 +26,7 @@ GameLogic::GameLogic(Game & game)
 	: game(game), humanControlSystem(game.entityManager, game.input), fireworks(game)
 {
 	displayMode = DisplayMode::REGULAR;
+	fireworkSpawnDist = 20.0f;
 }
 
 void GameLogic::Init()
@@ -76,7 +77,7 @@ void GameLogic::Init()
 	auto lightTransform = light1.Assign<Transform>();
 	lightTransform->Translate(1, 25, 1);
 	auto pointLight = light1.Assign<PointLight>();
-	pointLight->intensity = 2;
+	pointLight->intensity = 10;
 
 	// ecs::Entity light2 = game.entityManager.NewEntity();
 	// auto lightTransform2 = light2.Assign<Transform>();
@@ -88,12 +89,6 @@ void GameLogic::Init()
 	// ecs::Entity fSpawner = game.entityManager.NewEntity();
 	// auto fSpawnerTransform = fSpawner.Assign<Transform>();
 	// fSpawnerTransform->Translate(0, 0, 0);
-
-	// TODO: create fireworks somewhere else
-	createFireworkInFrontOfPlayer();
-
-
-	game.audio.Play(SoundId::DRAGON_ROAR, alduin);
 }
 
 GameLogic::~GameLogic()
@@ -102,8 +97,6 @@ GameLogic::~GameLogic()
 
 void GameLogic::createFireworkInFrontOfPlayer()
 {
-	const float FIREWORK_SPAWN_DIST = 10.0f;
-
 	ecs::Handle<Transform> playerTransform = player.Get<Transform>();
 	glm::vec3 playerPos = playerTransform->GetPosition();
 	glm::vec3 playerPosXZ(playerPos.x, 0, playerPos.z);
@@ -111,7 +104,7 @@ void GameLogic::createFireworkInFrontOfPlayer()
 	glm::vec3 playerForward = playerTransform->GetForward(game.GetWorldForward());
 	glm::vec3 playerForwardXZ = glm::normalize(glm::vec3(playerForward.x, 0, playerForward.z));
 
-	glm::vec3 fireworkPos = playerPosXZ + FIREWORK_SPAWN_DIST*playerForwardXZ;
+	glm::vec3 fireworkPos = playerPosXZ + fireworkSpawnDist*playerForwardXZ;
 
 	ecs::Entity firework = game.entityManager.NewEntity();
 
@@ -126,6 +119,8 @@ void GameLogic::createFireworkInFrontOfPlayer()
 
 	ecs::Handle<PointLight> fireworkLight = firework.Assign<PointLight>();
 	fireworkLight->colour = glm::vec3(1, 0, 0);
+
+	game.audio.Play(SoundId::FIREWORK_WHISTLE_LAUNCH, firework);
 }
 
 bool GameLogic::Frame(double dtSinceLastFrame)
@@ -158,6 +153,8 @@ bool GameLogic::guiLogic(double dt)
 
 	ImGui::Begin("Properties", &showDebugWindow, ImVec2(100,100), opacity,
 			windowFlags);
+
+		ImGui::Text(("Firework Spawn Distance: " + std::to_string(fireworkSpawnDist)).c_str());
 
 		if (ImGui::CollapsingHeader("Render Timing (ms)"))
 		{
@@ -263,6 +260,9 @@ bool GameLogic::guiLogic(double dt)
 		{
 			createFireworkInFrontOfPlayer();
 		}
+
+		glm::vec2 scroll = game.input.ScrollOffset();
+		fireworkSpawnDist += scroll.y;
 	}
 
 	return true;

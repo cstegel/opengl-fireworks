@@ -39,6 +39,8 @@ bool FireworkManager::Frame(double dt)
 				}
 			}
 
+			game.audio.Play(SoundId::FIREWORK_SMALL_EXPLOSION, e);
+
 			toDestroy.push_back(e);
 		}
 	}

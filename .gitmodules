@@ -19,6 +19,3 @@
 [submodule "ext/imgui"]
 	path = ext/imgui
 	url = https://github.com/ocornut/imgui.git
-[submodule "ext/alure"]
-	path = ext/alure
-	url = https://github.com/kcat/alure.git

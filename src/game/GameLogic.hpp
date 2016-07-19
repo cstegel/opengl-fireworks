@@ -18,6 +18,7 @@ namespace fw
 		void Init();
 		bool Frame(double dtSinceLastFrame);
 
+
 	private:
 		bool appLogic(double dt);
 		bool guiLogic(double dt);
@@ -27,6 +28,7 @@ namespace fw
 		Game & game;
 		HumanControlSystem humanControlSystem;
 		FireworkManager fireworks;
+		float fireworkSpawnDist;
 
 		ecs::Entity player;
 

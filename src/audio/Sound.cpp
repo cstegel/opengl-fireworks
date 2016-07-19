@@ -115,7 +115,11 @@ void Sound::UpdateSourceKinematics()
 	{
 		ALuint source = pair.first;
 		ecs::Entity location = pair.second;
-		setSourceKinematics(source, location);
+
+		if (location.Has<Transform>())
+		{
+			setSourceKinematics(source, location);
+		}
 	}
 
 	checkALErrors();

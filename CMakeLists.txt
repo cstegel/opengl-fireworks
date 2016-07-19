@@ -110,6 +110,8 @@ set(ASSIMP_INSTALL_PDB OFF)
 add_subdirectory(${EXT_PATH}/assimp)
 
 add_subdirectory(${EXT_PATH}/Simple-OpenGL-Image-Library)
+#
+# add_subdirectory(${EXT_PATH}/alure)
 
 file(GLOB ImGui_sources ${EXT_PATH}/imgui/*.cpp)
 add_library(ImGui STATIC ${ImGui_sources})
@@ -150,6 +152,7 @@ set(EXT_LIBS
 	ImGui
 	${OPENAL_LIBRARY}
 	${ALUT_LIBRARIES}
+	# alure2_s
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib)

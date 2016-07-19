@@ -40,8 +40,15 @@ void AudioManager::validateEntity(ecs::Entity ent) const
 
 void AudioManager::loadSoundBuffers()
 {
-	string audioFilepath = AssetManager::GetAudioPath("monstrous_cow.wav");
+	string audioFilepath;
+	audioFilepath = AssetManager::GetAudioPath("monstrous_cow.wav");
 	sounds.emplace(SoundId::DRAGON_ROAR, audioFilepath);
+
+	audioFilepath = AssetManager::GetAudioPath("small_firework_explosion2.wav");
+	sounds.emplace(SoundId::FIREWORK_SMALL_EXPLOSION, audioFilepath);
+
+	audioFilepath = AssetManager::GetAudioPath("whistle_firework_launch.wav");
+	sounds.emplace(SoundId::FIREWORK_WHISTLE_LAUNCH, audioFilepath);
 }
 
 bool AudioManager::Frame()
