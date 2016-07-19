@@ -13,6 +13,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/ext.hpp>
 #include <imgui/imgui.h>
 
 #include <algorithm>
@@ -283,11 +284,11 @@ void Renderer::Render(RenderContext & context)
 			Transform transform = *e.Get<Transform>();
 
 			// light size depends asymptotically on its intensity
-			transform.Scale(1.0f - std::min(0.95f, 1.0f/(1.f + 0.05f*pointLight->intensity)));
+			transform.Scale(2.0f - std::min(1.95f, 2.0f/(1.f + 0.05f*pointLight->intensity)));
 
 			glUniform3fv(
-			lightShader.getUniformLocation("lightColour"),
-			1, &pointLight->colour[0]);
+				lightShader.getUniformLocation("lightColour"),
+				1, &pointLight->colour[0]);
 
 			Model & model = graphics.GetLightModel();
 

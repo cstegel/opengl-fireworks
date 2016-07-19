@@ -15,6 +15,7 @@
 #include <iomanip>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/ext.hpp>
 
 #include <imgui/imgui.h>
 
@@ -115,12 +116,12 @@ void GameLogic::createFireworkInFrontOfPlayer()
 	ecs::Entity firework = game.entityManager.NewEntity();
 
 	firework.Assign<Transform>(fireworkPos);
-	firework.Assign<Physics>(glm::vec3(1, 0, 0), glm::vec3(0, 20, 0));
+	firework.Assign<Physics>(glm::vec3(1, 0, 0), glm::vec3(0, 10, 0));
 
 	ecs::Handle<Firework> fireworkComp = firework.Assign<Firework>();
 	fireworkComp->explosionCountdown = 2.0f;
 	fireworkComp->numSplitsOnExplosion = 4;
-	fireworkComp->numExplosionsLeft = 0;
+	fireworkComp->numExplosionsLeft = 2;
 	fireworkComp->type = Firework::Type::RANDOM;
 
 	ecs::Handle<PointLight> fireworkLight = firework.Assign<PointLight>();

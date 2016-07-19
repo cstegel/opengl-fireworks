@@ -22,6 +22,8 @@ FireworkManager::~FireworkManager()
 
 bool FireworkManager::Frame(double dt)
 {
+	vector<ecs::Entity> toDestroy;
+
 	for (ecs::Entity e : game.entityManager.EntitiesWith<Firework, Transform, Physics, PointLight>())
 	{
 		ecs::Handle<Firework> firework = e.Get<Firework>();
@@ -38,8 +40,14 @@ bool FireworkManager::Frame(double dt)
 			}
 
 			e.Destroy();
+			// toDestroy.push_back(e);
 		}
 	}
+
+	// for (ecs::Entity e : toDestroy)
+	// {
+	// 	e.Destroy();
+	// }
 
 	return true;
 }
@@ -56,7 +64,7 @@ ecs::Entity FireworkManager::createExplosionFirework(ecs::Entity firework)
 	newPhys->velocity += explosionVelocity;
 
 	ecs::Handle<Firework> newFirework = nextFirework.Assign<Firework>(*firework.Get<Firework>());
-	newFirework->explosionCountdown = 2.0f;
+	newFirework->explosionCountdown = 1.0f;
 	newFirework->numExplosionsLeft -= 1;
 
 	nextFirework.Assign<PointLight>(*firework.Get<PointLight>());

@@ -39,7 +39,7 @@ bool PhysicsManager::Frame(double dtSinceLastFrame)
 		if (displacement.y + curPos.y < 0)
 		{
 			displacement.y = -curPos.y;
-			physComp->velocity *= -0.5;
+			physComp->velocity.y *= -0.5;
 		}
 
 		transformComp->Translate(displacement);
