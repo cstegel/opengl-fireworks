@@ -24,6 +24,7 @@ public:
 private:
 	ecs::Entity createExplosionFirework(ecs::Entity firework);
 	glm::vec3 randomUnitVector();
+	glm::vec3 randomColour();
 
 	Game & game;
 	std::random_device randDevice;

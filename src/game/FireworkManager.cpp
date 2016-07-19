@@ -39,15 +39,14 @@ bool FireworkManager::Frame(double dt)
 				}
 			}
 
-			e.Destroy();
-			// toDestroy.push_back(e);
+			toDestroy.push_back(e);
 		}
 	}
 
-	// for (ecs::Entity e : toDestroy)
-	// {
-	// 	e.Destroy();
-	// }
+	for (ecs::Entity e : toDestroy)
+	{
+		e.Destroy();
+	}
 
 	return true;
 }
@@ -67,7 +66,8 @@ ecs::Entity FireworkManager::createExplosionFirework(ecs::Entity firework)
 	newFirework->explosionCountdown = 1.0f;
 	newFirework->numExplosionsLeft -= 1;
 
-	nextFirework.Assign<PointLight>(*firework.Get<PointLight>());
+	ecs::Handle<PointLight> newLight = nextFirework.Assign<PointLight>(*firework.Get<PointLight>());
+	newLight->colour = randomColour();
 
 	return nextFirework;
 }
@@ -80,6 +80,15 @@ glm::vec3 FireworkManager::randomUnitVector()
 			randUnitFloat(randEngine),
 			randUnitFloat(randEngine)
 		)
+	);
+}
+
+glm::vec3 FireworkManager::randomColour()
+{
+	return glm::vec3(
+		randUnitFloat(randEngine) + 0.5f,
+		randUnitFloat(randEngine) + 0.5f,
+		randUnitFloat(randEngine) + 0.5f
 	);
 }
 
