@@ -25,21 +25,6 @@ The program can then be run with "./bin/Release/fireworks".
 
 This program was compiled/run successfully on graphics lab computer 13 (gl13).
 
-
-# Objectives
-
-  1. modelling the scene
-  2. UI
-  3. texture mapping [1]
-  4. bump mapping [2][6]
-  5. shadows using shadow maps [4][5][9]
-  6. shadow map antialiasing using Percentage-Closer Filtering [8]
-  7. volumetric light scattering as a postprocess effect [3]
-  8. triggered sound where volume decays with distance
-  9. kinematics system (gravity, velocity, acceleration)
-  10. particle emitters (collections of temporary 2D sprites affected by kinematics
-
-
 # Controls
 
 The mouse can be toggled on with the "~" key (the one to the left of the "1").  You can then
@@ -48,3 +33,18 @@ open up the debug menu to toggle various options as well as change the display m
 You can move around in the world with the WASD keys, spacebar, CTRL, and by moving the mouse.
 
 Clicking the mouse will launch a firework into the air.
+Scrolling the mouse wheel will increase or decrease the distance that fireworks
+spawn in front of you.
+
+# Objectives
+
+  1. modelling the scene
+  2. UI
+  3. texture mapping
+  4. bump mapping
+  5. shadows using shadow maps
+  6. shadow map antialiasing using Percentage-Closer Filtering
+  7. volumetric light scattering as a postprocess effect
+  8. triggered sound where volume decays with distance
+  9. kinematics system (gravity, velocity, acceleration)
+  10. particle emitters (collections of temporary 2D sprites affected by kinematics
