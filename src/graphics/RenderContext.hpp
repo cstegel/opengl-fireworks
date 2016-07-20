@@ -81,7 +81,7 @@ namespace fw
 
 		double GetRenderStageAvgTime(RenderStage stage) const;
 
-		static const uint MAX_SHADER_POINT_LIGHTS = 8;
+		static const uint MAX_SHADER_POINT_LIGHTS = 1;
 		Game & game;
 		ecs::EntityManager & entityManager;
 	private:

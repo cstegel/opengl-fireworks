@@ -57,7 +57,12 @@ private:
 	void initTempMixFBO();
 	void initShadowMaps();
 
-	void generateShadowMap(ecs::Entity lightEnt, uint bindIndex, RenderContext & context, GLuint rebindFBO);
+	void generateShadowMap(
+		ecs::Entity lightEnt,
+		uint bindIndex,
+		RenderContext & context,
+		GLuint rebindFBO,
+		ShaderProgram & rebindShader);
 
 	/**
 	 * terribly programmed function for adding together the gBuffer outline texture and

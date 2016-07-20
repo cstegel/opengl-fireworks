@@ -17,6 +17,7 @@ uniform PointLight[N_POINT_LIGHTS] pointLights;
 layout (binding = 0) uniform sampler2D texPosition;
 layout (binding = 1) uniform sampler2D texNormalShininess;
 layout (binding = 2) uniform sampler2D texAlbedoSpecular;
+layout (binding = 4) uniform sampler2D texShadowDepth;
 
 uniform int numLights;
 
@@ -26,7 +27,7 @@ layout (location = 0) out vec4 outFragColour;
 
 
 void main() {
-	float depth = texture(pointLights[0].texShadowDepth, inTexCoord).r;
+	float depth = texture(texShadowDepth, inTexCoord).r;
 	outFragColour = vec4(depth, depth, depth, 1.0);
 
 	// prevent things being optimized out and requiring conditional binding in the source code

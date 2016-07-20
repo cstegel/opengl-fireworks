@@ -135,6 +135,12 @@ void Renderer::initShadowMaps()
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMap.texDepth, 0);
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			throw std::runtime_error("G-Buffer is not complete");
+		}
+
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 }
@@ -317,24 +323,6 @@ void Renderer::Render(RenderContext & context)
 	{
 		auto timer = context.StartRenderStage(RenderStage::SHADING);
 
-		if (isGBufferDebugDisplayMode(displayMode))
-		{
-			glUniform1i(shader->getUniformLocation("displayMode"), (int)displayMode);
-		}
-
-
-		gBuffer.BindCoreTextures(*shader);
-		if (displayMode == DisplayMode::STENCIL)
-		{
-			gBuffer.BindStencilTexture(*shader);
-		}
-
-		if (shouldBindViewPos)
-		{
-			glUniform3f(
-			shader->getUniformLocation("viewPos_World"),
-			viewPos.x, viewPos.y, viewPos.z);
-		}
 
 		// may need multiple draw calls in order to calculate shading for all lights
 		auto lightEntities = context.entityManager.EntitiesWith<PointLight, Transform>();
@@ -352,11 +340,30 @@ void Renderer::Render(RenderContext & context)
 				     i < RenderContext::MAX_SHADER_POINT_LIGHTS && lightIterator != lastLightIterator;
 				     ++i, ++lightIterator)
 				{
-					generateShadowMap(*lightIterator, i, context, postProcessFBO);
+					generateShadowMap(*lightIterator, i, context, postProcessFBO, *shader);
 					bindWorldSpaceLight(*lightIterator, i, *shader, context);
 				}
 
 				glUniform1i(shader->getUniformLocation("numLights"), i);
+			}
+
+			if (isGBufferDebugDisplayMode(displayMode))
+			{
+				glUniform1i(shader->getUniformLocation("displayMode"), (int)displayMode);
+			}
+
+
+			gBuffer.BindCoreTextures(*shader);
+			if (displayMode == DisplayMode::STENCIL)
+			{
+				gBuffer.BindStencilTexture(*shader);
+			}
+
+			if (shouldBindViewPos)
+			{
+				glUniform3f(
+				shader->getUniformLocation("viewPos_World"),
+				viewPos.x, viewPos.y, viewPos.z);
 			}
 
 			renderQuad();
@@ -634,7 +641,7 @@ void Renderer::renderModels(RenderContext & context, ShaderProgram & shader)
 	}
 }
 
-void Renderer::generateShadowMap(ecs::Entity lightEnt, uint bindIndex, RenderContext & context, GLuint rebindFBO)
+void Renderer::generateShadowMap(ecs::Entity lightEnt, uint bindIndex, RenderContext & context, GLuint rebindFBO, ShaderProgram & rebindShader)
 {
 	ShadowMap & shadowMap = shadowMaps.at(bindIndex);
 
@@ -642,17 +649,18 @@ void Renderer::generateShadowMap(ecs::Entity lightEnt, uint bindIndex, RenderCon
 	// float infDepth = 1.0f;
 	// glClearNamedFramebufferfv(shadowMap.FBO, GL_DEPTH, 0, &infDepth);
 	glClear(GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
 	glViewport(0, 0, Renderer::SHADOW_WIDTH, Renderer::SHADOW_HEIGHT);
 	shadowMapShader.enable();
 	{
 		glm::vec3 worldUp = graphics.game.GetWorldUp();
-		glm::mat4 worldToLight = glm::inverse(lightEnt.Get<Transform>()->GetModelTransform());
+		glm::mat4 lightToWorld = lightEnt.Get<Transform>()->GetModelTransform();
 		glm::mat4 lookDown = glm::lookAt(glm::vec3(0, 0, 0), -worldUp, worldUp);
 		glm::mat4 lightPerspective = glm::perspective(
 			glm::radians(45.0f), 1.0f, 0.1f, 1000.f
 		);
 
-		shadowMap.worldToLightMat = lightPerspective * lookDown * worldToLight;
+		shadowMap.worldToLightMat = lightPerspective * glm::inverse(lightToWorld*lookDown);
 
 		glUniformMatrix4fv(
 		shadowMapShader.getUniformLocation("worldToLightMat"), 1, GL_FALSE,
@@ -665,6 +673,8 @@ void Renderer::generateShadowMap(ecs::Entity lightEnt, uint bindIndex, RenderCon
 	// reset glViewport
 	glViewport(0, 0, context.GetWindowWidth(), context.GetWindowHeight());
 	glBindFramebuffer(GL_FRAMEBUFFER, rebindFBO);
+
+	rebindShader.enable();
 }
 
 void Renderer::bindWorldSpaceLight(
@@ -691,12 +701,12 @@ void Renderer::bindWorldSpaceLight(
 	glUniformMatrix4fv(shader.getUniformLocation(var + ".worldToLightMat", true),
 		1, GL_FALSE, glm::value_ptr(shadowMap.worldToLightMat));
 
-	// start at 3 because other gBuffer textures bind 0 - 2
-	glActiveTexture(GL_TEXTURE3 + lightIndex);
+	// start at 4 because other gBuffer textures bind 0 - 3
+	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_2D, shadowMap.texDepth);
 	glUniform1i(
-		shader.getUniformLocation(var + ".texShadowDepth", true),
-		3 + lightIndex
+		shader.getUniformLocation("texShadowDepth", true),
+		4
 	);
 }
 

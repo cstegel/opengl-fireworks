@@ -7,16 +7,16 @@ struct PointLight
 
 	float intensity;
 	vec2 attenuation; // [0] = linear, [1] = quadratic
-	sampler2D texShadowDepth;
 	mat4 worldToLightMat;
 };
 
-#define N_POINT_LIGHTS 8
+#define N_POINT_LIGHTS 1
 uniform PointLight[N_POINT_LIGHTS] pointLights;
 
 layout (binding = 0) uniform sampler2D texPosition;
 layout (binding = 1) uniform sampler2D texNormalShininess;
 layout (binding = 2) uniform sampler2D texAlbedoSpecular;
+layout (binding = 4) uniform sampler2D texShadowDepth;
 
 uniform vec3 viewPos_World;
 uniform int numLights;
@@ -35,7 +35,7 @@ float getShadow(vec3 fragPos_World, PointLight light)
 	// convert to [0, 1] range
 	vec3 fragPos_Screen = fragPos_Light.xyz * 0.5 + 0.5;
 
-	float occluderDepth = texture(light.texShadowDepth, fragPos_Screen.xy).r;
+	float occluderDepth = texture(texShadowDepth, fragPos_Screen.xy).r;
 	float curDepth = fragPos_Screen.z;
 
 	return curDepth < occluderDepth ? 0.0 : 1.0;
@@ -70,7 +70,7 @@ vec3 phongColour(PointLight light)
 	vec3 specular = pow(specularStrength, shininess) * matSpec;
 
 	float shadow = getShadow(fragPos_World, light);
-	return ambient + (1.0 - shadow) * localBrightness * light.colour *  (diffuse + specular);
+	return ambient + (1.0 - 0.001*shadow) * localBrightness * light.colour *  (diffuse + specular);
 }
 
 void main() {

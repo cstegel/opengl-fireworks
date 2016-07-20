@@ -77,7 +77,7 @@ void GameLogic::Init()
 	auto lightTransform = light1.Assign<Transform>();
 	lightTransform->Translate(1, 25, 1);
 	auto pointLight = light1.Assign<PointLight>();
-	pointLight->intensity = 10;
+	pointLight->intensity = 6;
 
 	// ecs::Entity light2 = game.entityManager.NewEntity();
 	// auto lightTransform2 = light2.Assign<Transform>();
