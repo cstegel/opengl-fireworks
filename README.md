@@ -2,6 +2,7 @@
 
 This is an OpenGL project that aims to model fireworks.  It is my final project for UW's CS 488 course.
 
+![fireworks](screenshot.png)
 
 # Dependencies
 
