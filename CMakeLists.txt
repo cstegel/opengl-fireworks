@@ -146,7 +146,7 @@ set(EXT_LIBS
 	glew_s
 	glfw
 	${GLFW_LIBRARIES}
-	conglomerate
+	glomerate
 	assimp
 	SOIL
 	ImGui
