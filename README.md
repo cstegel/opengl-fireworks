@@ -20,8 +20,8 @@ course submission has these dependencies already pulled in.
 
 To compile the program, run the command "make" within the root directory of the project.
 
-The program will be compiled to "bin/Release/fireworks".
-The program can then be run with "./bin/Release/fireworks".
+The program will be compiled to `bin/Release/fireworks`.
+The program can then be run with `./bin/Release/fireworks`.
 
 This program was compiled/run successfully on graphics lab computer 13 (gl13).
 
@@ -42,20 +42,20 @@ spawn in front of you.
   2. UI
   3. texture mapping
   4. bump mapping
-  5. shadows using shadow maps
-  6. shadow map antialiasing using Percentage-Closer Filtering
+  5. shadows using shadow maps (incomplete)
+  6. shadow map antialiasing using Percentage-Closer Filtering (incomplete)
   7. volumetric light scattering as a postprocess effect
   8. triggered sound where volume decays with distance
   9. kinematics system (gravity, velocity, acceleration)
-  10. particle emitters (collections of temporary 2D sprites affected by kinematics
+  10. particle emitters (collections of temporary 2D sprites affected by kinematics) (incomplete)
 
 # License
 
-Check the individual LICENSE files inside of assets/models/ directories before
+Check the individual LICENSE files inside of `assets/models/` directories before
 using the models for something other than personal use. Most of the models
 only have a license permitting personal use.
 
-Files under the src/cs488 directory are copyright of the instructors of
+Files under the `src/cs488/` directory are copyright of the instructors of
 the University of Waterloo's CS 488 course.
 
-All other files are Licensed under the MIT license as explained in LICENSE.
+All other files are Licensed under the MIT license as explained in `LICENSE`.
