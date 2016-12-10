@@ -48,3 +48,14 @@ spawn in front of you.
   8. triggered sound where volume decays with distance
   9. kinematics system (gravity, velocity, acceleration)
   10. particle emitters (collections of temporary 2D sprites affected by kinematics
+
+# License
+
+Check the individual LICENSE files inside of assets/models/ directories before
+using the models for something other than personal use. Most of the models
+only have a license permitting personal use.
+
+Files under the src/cs488 directory are copyright of the instructors of
+the University of Waterloo's CS 488 course.
+
+All other files are Licensed under the MIT license as explained in LICENSE.
